@@ -7,8 +7,8 @@
             </a>
         @endif
 
-        @if (Route::has('register'))
-            <a href="{{ route('register') }}"
+        @if (Route::has('filament.auth.register'))
+            <a href="{{ route('filament.auth.register') }}"
                class="rounded-lg border border-yellow-500 px-6 py-3 text-sm font-semibold uppercase text-yellow-500 transition hover:bg-yellow-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
                 Регистрация
             </a>

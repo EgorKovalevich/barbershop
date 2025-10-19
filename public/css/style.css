@@ -1909,6 +1909,21 @@ nav{
     box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
 }
 
+.profile-input--error {
+    border-color: rgba(248, 113, 113, 0.9);
+    box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.25);
+}
+
+.profile-input-message {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.profile-input-message--error {
+    color: #ef4444;
+}
+
 .profile-submit {
     align-self: flex-start;
     padding: 12px 28px;

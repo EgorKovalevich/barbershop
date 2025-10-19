@@ -139,27 +139,42 @@
 
                             <div class="profile-form-group">
                                 <label for="surname" class="profile-form-label">Фамилия</label>
-                                <input id="surname" type="text" name="surname" value="{{ old('surname', $user?->surname) }}" class="profile-input" required>
+                                <input id="surname" type="text" name="surname" value="{{ old('surname', $user?->surname) }}" class="profile-input @error('surname') profile-input--error @enderror" required>
+                                @error('surname')
+                                    <p class="profile-input-message profile-input-message--error">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="profile-form-group">
                                 <label for="name" class="profile-form-label">Имя</label>
-                                <input id="name" type="text" name="name" value="{{ old('name', $user?->name) }}" class="profile-input" required>
+                                <input id="name" type="text" name="name" value="{{ old('name', $user?->name) }}" class="profile-input @error('name') profile-input--error @enderror" required>
+                                @error('name')
+                                    <p class="profile-input-message profile-input-message--error">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="profile-form-group">
                                 <label for="patronymic" class="profile-form-label">Отчество</label>
-                                <input id="patronymic" type="text" name="patronymic" value="{{ old('patronymic', $user?->patronymic) }}" class="profile-input">
+                                <input id="patronymic" type="text" name="patronymic" value="{{ old('patronymic', $user?->patronymic) }}" class="profile-input @error('patronymic') profile-input--error @enderror">
+                                @error('patronymic')
+                                    <p class="profile-input-message profile-input-message--error">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="profile-form-group">
                                 <label for="email" class="profile-form-label">Email</label>
-                                <input id="email" type="email" name="email" value="{{ old('email', $user?->email) }}" class="profile-input" required>
+                                <input id="email" type="email" name="email" value="{{ old('email', $user?->email) }}" class="profile-input @error('email') profile-input--error @enderror" required>
+                                @error('email')
+                                    <p class="profile-input-message profile-input-message--error">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <div class="profile-form-group">
                                 <label for="number" class="profile-form-label">Телефон</label>
-                                <input id="number" type="text" name="number" value="{{ old('number', $user?->number) }}" class="profile-input" placeholder="+7 (___) ___-__-__">
+                                <input id="number" type="text" name="number" value="{{ old('number', $user?->number) }}" class="profile-input @error('number') profile-input--error @enderror" placeholder="+7 (___) ___-__-__">
+                                @error('number')
+                                    <p class="profile-input-message profile-input-message--error">{{ $message }}</p>
+                                @enderror
                             </div>
 
                             <button type="submit" class="profile-submit">Сохранить изменения</button>

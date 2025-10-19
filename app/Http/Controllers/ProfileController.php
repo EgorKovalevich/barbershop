@@ -25,13 +25,21 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'surname' => ['required', 'string', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'patronymic' => ['nullable', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'number' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validate(
+            [
+                'surname' => ['required', 'string', 'max:255', 'regex:/^[\pL\s-]+$/u'],
+                'name' => ['required', 'string', 'max:255', 'regex:/^[\pL\s-]+$/u'],
+                'patronymic' => ['nullable', 'string', 'max:255', 'regex:/^[\pL\s-]+$/u'],
+                'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+                'number' => ['nullable', 'string', 'max:255', 'regex:/^[0-9+()\s-]+$/'],
+            ],
+            [
+                'surname.regex' => __('Фамилия должна содержать только буквы, пробелы и дефисы.'),
+                'name.regex' => __('Имя должно содержать только буквы, пробелы и дефисы.'),
+                'patronymic.regex' => __('Отчество должно содержать только буквы, пробелы и дефисы.'),
+                'number.regex' => __('Номер телефона может содержать только цифры, пробелы и символы +, -, ().'),
+            ]
+        );
 
         $user->fill($data);
         $user->save();

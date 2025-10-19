@@ -3,7 +3,7 @@
         @if (Route::has('filament.auth.login'))
             <a href="{{ route('filament.auth.login') }}"
                class="rounded-lg bg-yellow-500 px-6 py-3 text-sm font-semibold uppercase text-white transition hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
-                Войти в панель
+                Войти
             </a>
         @endif
 

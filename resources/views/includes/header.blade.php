@@ -1,5 +1,5 @@
 <div class="container_header" id="header">
-    <div class="flex flex-wrap items-center justify-end gap-4">
+    <div class="header-auth-wrapper">
         @auth
             @php
                 $user = auth()->user();
@@ -35,29 +35,28 @@
                 }
             @endphp
 
-            <div class="flex items-center gap-4">
+            <div class="header-actions">
                 @if($user?->role === 'admin' && Route::has('filament.pages.dashboard'))
                     <a href="{{ route('filament.pages.dashboard') }}"
-                       class="rounded-lg bg-yellow-500 px-6 py-3 text-sm font-semibold uppercase text-white transition hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
+                       class="btn-filament-primary">
                         Панель админа
                     </a>
                 @endif
 
-                <div class="relative">
+                <div class="client-account-menu">
                     <button type="button"
                             id="client-user-menu-button"
                             data-dropdown-toggle="client-user-menu"
-                            class="group flex items-center gap-3 rounded-full bg-white/90 px-3 py-2 text-left text-sm font-medium text-slate-700 shadow-lg ring-1 ring-white/70 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
+                            class="client-account-toggle">
                         <span class="sr-only">Открыть меню пользователя</span>
 
-                        <div class="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-inner">
-                            <div class="absolute inset-0 rounded-full border border-white/30"></div>
+                        <div class="client-avatar">
                             @if ($avatarUrl)
-                                <img src="{{ $avatarUrl }}" alt="{{ $user?->name ?? $user?->email }}" class="h-full w-full object-cover">
+                                <img src="{{ $avatarUrl }}" alt="{{ $user?->name ?? $user?->email }}" class="client-avatar-image">
                             @elseif ($initials !== '')
-                                <span class="text-lg font-semibold uppercase">{{ $initials }}</span>
+                                <span class="client-avatar-initials">{{ $initials }}</span>
                             @else
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-6 w-6">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="client-avatar-placeholder">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                           d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -66,63 +65,54 @@
                             @endif
                         </div>
 
-                        <div class="hidden text-left sm:block">
-                            <span class="block text-xs font-semibold uppercase tracking-wide text-slate-400">{{ __('Аккаунт') }}</span>
-                            <span class="block text-sm font-semibold text-slate-900">{{ $displayName !== '' ? $displayName : __('Пользователь') }}</span>
+                        <div class="client-account-labels">
+                            <span class="client-account-label">{{ __('Аккаунт') }}</span>
+                            <span class="client-account-name">{{ $displayName !== '' ? $displayName : __('Пользователь') }}</span>
                         </div>
 
-                        <svg class="h-4 w-4 text-slate-400 transition group-hover:text-slate-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd" />
-                        </svg>
+                        <span class="client-account-chevron" aria-hidden="true"></span>
                     </button>
 
-                    <div id="client-user-menu"
-                         class="absolute right-0 z-50 mt-3 hidden w-72 origin-top-right overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 text-sm text-slate-600 shadow-2xl backdrop-blur">
-                        <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-6 py-5 text-white">
-                            <p class="text-base font-semibold">{{ $displayName !== '' ? $displayName : __('Пользователь') }}</p>
+                    <div id="client-user-menu" class="client-account-dropdown hidden">
+                        <div class="client-account-dropdown-header">
+                            <p class="client-account-dropdown-name">{{ $displayName !== '' ? $displayName : __('Пользователь') }}</p>
                             @if($user?->email)
-                                <p class="mt-1 text-sm text-white/70">{{ $user->email }}</p>
+                                <p class="client-account-dropdown-email">{{ $user->email }}</p>
                             @endif
                             @if($user?->role)
-                                <span class="mt-3 inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-white/80">
-                                    {{ $user->role === 'admin' ? 'Администратор' : 'Клиент' }}
-                                </span>
+                                <span class="client-account-role">{{ $user->role === 'admin' ? 'Администратор' : 'Клиент' }}</span>
                             @endif
                         </div>
 
-                        <div class="space-y-1 bg-white/90 px-4 py-4">
-                            <a href="{{ route('profile.show') }}"
-                               class="group flex items-center gap-3 rounded-2xl px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-100">
-                                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900/90 text-white shadow">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <div class="client-account-links">
+                            <a href="{{ route('profile.show') }}" class="client-account-link">
+                                <span class="client-account-link-icon">
+                                    <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5l-3-3-3 3" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 21h6a2.25 2.25 0 002.25-2.25V7.5L12.75 4.5a2.25 2.25 0 00-1.5 0L6.75 7.5v11.25A2.25 2.25 0 009 21z" />
                                     </svg>
                                 </span>
-                                <div class="flex flex-col">
-                                    <span class="text-sm">Профиль</span>
-                                    <span class="text-xs font-normal text-slate-400">Просмотреть информацию аккаунта</span>
-                                </div>
+                                <span class="client-account-link-text">
+                                    <span class="client-account-link-title">Профиль</span>
+                                    <span class="client-account-link-description">Просмотреть информацию аккаунта</span>
+                                </span>
                             </a>
                         </div>
 
-                        <div class="bg-slate-50/90 px-4 py-4">
-                            <form method="POST" action="{{ route('logout') }}">
+                        <div class="client-account-logout">
+                            <form method="POST" action="{{ route('logout') }}" class="client-account-logout-form">
                                 @csrf
-                                <button type="submit"
-                                        class="group flex w-full items-center justify-between rounded-2xl bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-100">
-                                    <span class="flex items-center gap-3">
-                                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-red-500/10 text-red-600">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <button type="submit" class="client-account-logout-button">
+                                    <span class="client-account-logout-text">
+                                        <span class="client-account-logout-icon">
+                                            <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H9m9 0l-3 3m3-3l-3-3" />
                                             </svg>
                                         </span>
                                         Выйти
                                     </span>
-                                    <svg class="h-4 w-4 text-red-500 transition group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h8.69l-2.22-2.22a.75.75 0 011.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 01-1.06-1.06l2.22-2.22H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
-                                    </svg>
+                                    <span class="client-account-logout-arrow" aria-hidden="true"></span>
                                 </button>
                             </form>
                         </div>
@@ -132,18 +122,17 @@
         @else
             @if (Route::has('filament.auth.login'))
                 <a href="{{ route('filament.auth.login') }}"
-                   class="rounded-lg bg-yellow-500 px-6 py-3 text-sm font-semibold uppercase text-white transition hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
+                   class="btn-filament-primary">
                     Войти
                 </a>
             @endif
 
             @if (Route::has('filament.auth.register'))
                 <a href="{{ route('filament.auth.register') }}"
-                   class="rounded-lg border border-yellow-500 px-6 py-3 text-sm font-semibold uppercase text-yellow-500 transition hover:bg-yellow-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2">
+                   class="btn-filament-outline">
                     Регистрация
                 </a>
             @endif
         @endauth
     </div>
 </div>
-

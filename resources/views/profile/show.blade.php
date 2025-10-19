@@ -1,116 +1,196 @@
 @extends('layouts.main')
 
 @section('content')
-    <div class="relative isolate min-h-screen bg-slate-950">
-        <div class="absolute inset-x-0 top-0 -z-10 overflow-hidden">
-            <div class="h-96 bg-gradient-to-b from-amber-500/20 via-yellow-400/10 to-transparent blur-3xl"></div>
+    <div class="profile-dashboard">
+        <div class="profile-hero">
+            <div class="wrapper">
+                <div class="profile-hero-inner">
+                    <div class="profile-hero-text">
+                        <span class="profile-hero-label">{{ __('Панель профиля') }}</span>
+                        <h1 class="profile-hero-title">{{ trim(($user?->surname ?? '') . ' ' . ($user?->name ?? '')) ?: $user?->email }}</h1>
+                        <p class="profile-hero-description">Управляйте личными данными, контактами и безопасностью аккаунта в едином окне, оформленном в стиле Filament.</p>
+                        <div class="profile-hero-meta">
+                            <div class="profile-meta-card">
+                                <span class="profile-meta-label">Роль</span>
+                                <span class="profile-meta-value">{{ $user?->role === 'admin' ? 'Администратор' : 'Клиент' }}</span>
+                            </div>
+                            <div class="profile-meta-card">
+                                <span class="profile-meta-label">На платформе с</span>
+                                <span class="profile-meta-value">{{ optional($user?->created_at)->format('d.m.Y') ?? '—' }}</span>
+                            </div>
+                            <div class="profile-meta-card">
+                                <span class="profile-meta-label">Последнее обновление</span>
+                                <span class="profile-meta-value">{{ optional($user?->updated_at)->diffForHumans() ?? '—' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-hero-avatar">
+                        <div class="profile-avatar">
+                            @php
+                                $initials = collect([$user?->surname, $user?->name])
+                                    ->filter()
+                                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                                    ->join('') ?: ($user?->email ? mb_substr($user->email, 0, 1) : '—');
+                            @endphp
+
+                            <span class="profile-avatar-initials">{{ $initials }}</span>
+                        </div>
+                        <span class="profile-avatar-caption">Персональный аккаунт</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="wrapper">
-            <div class="flex flex-col gap-8 py-12 sm:py-16">
-                <div class="mx-auto w-full max-w-5xl rounded-3xl border border-white/10 bg-white/5 px-6 py-10 shadow-[0_40px_80px_-40px_rgba(15,23,42,0.65)] backdrop-blur">
-                    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">{{ __('Панель профиля') }}</p>
-                            <h1 class="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ $user?->surname }} {{ $user?->name }}</h1>
-                            <p class="mt-2 max-w-xl text-sm text-white/60">Просматривайте и управляйте информацией об аккаунте в интерфейсе, вдохновлённом Filament.</p>
-                        </div>
+            @if (session('profileUpdated'))
+                <div class="profile-alert profile-alert--success">{{ session('profileUpdated') }}</div>
+            @endif
 
-                        <div class="flex items-center gap-4">
-                            <div class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-3xl font-semibold uppercase text-white shadow-lg">
-                                @if ($user?->avatar_url ?? false)
-                                    <img src="{{ $user->avatar_url }}" alt="{{ $user?->name ?? $user?->email }}" class="h-full w-full object-cover">
-                                @else
-                                    {{ collect([$user?->surname, $user?->name])
-                                        ->filter()
-                                        ->map(fn ($part) => mb_substr($part, 0, 1))
-                                        ->join('') ?: ($user?->email ? mb_substr($user->email, 0, 1) : '—') }}
-                                @endif
-                            </div>
+            @if (session('passwordUpdated'))
+                <div class="profile-alert profile-alert--success">{{ session('passwordUpdated') }}</div>
+            @endif
 
-                            <div class="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white/80">
-                                <p class="text-xs uppercase tracking-[0.2em] text-white/50">Статус</p>
-                                <p class="mt-2 text-sm font-semibold">
-                                    {{ $user?->role === 'admin' ? 'Администратор Filament' : 'Клиент' }}
-                                </p>
-                                <p class="mt-1 text-xs text-white/50">На платформе с {{ optional($user?->created_at)->format('d.m.Y') ?? '—' }}</p>
+            @if ($errors->any())
+                <div class="profile-alert profile-alert--error">
+                    <p class="profile-alert-title">Проверьте введённые данные:</p>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if ($errors->passwordUpdate->any())
+                <div class="profile-alert profile-alert--error">
+                    <p class="profile-alert-title">Не удалось сменить пароль:</p>
+                    <ul>
+                        @foreach ($errors->passwordUpdate->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <div class="profile-content">
+                <div class="profile-column profile-column--details">
+                    <section class="profile-card profile-card--details">
+                        <h2 class="profile-card-title">Основная информация</h2>
+                        <p class="profile-card-subtitle">Все ключевые данные собраны в карточках для быстрого просмотра.</p>
+
+                        <div class="profile-details-grid">
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Фамилия</span>
+                                <span class="profile-detail-value">{{ $user?->surname ?? '—' }}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Имя</span>
+                                <span class="profile-detail-value">{{ $user?->name ?? '—' }}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Отчество</span>
+                                <span class="profile-detail-value">{{ $user?->patronymic ?? '—' }}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Email</span>
+                                <span class="profile-detail-value">{{ $user?->email ?? '—' }}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Телефон</span>
+                                <span class="profile-detail-value">{{ $user?->number ?? '—' }}</span>
+                            </div>
+                            <div class="profile-detail">
+                                <span class="profile-detail-label">Последний вход</span>
+                                <span class="profile-detail-value">{{ optional($user?->last_login_at)->format('d.m.Y H:i') ?? '—' }}</span>
                             </div>
                         </div>
-                    </div>
+                    </section>
+
+                    <section class="profile-card profile-card--activity">
+                        <h2 class="profile-card-title">Активность аккаунта</h2>
+                        <p class="profile-card-subtitle">Статистика помогает следить за актуальностью контактной информации и безопасности.</p>
+
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <span class="profile-stat-value">{{ $user?->email_verified_at ? 'Подтверждён' : 'Не подтверждён' }}</span>
+                                <span class="profile-stat-label">Статус email</span>
+                            </div>
+                            <div class="profile-stat">
+                                <span class="profile-stat-value">{{ optional($user?->updated_at)->format('d.m.Y H:i') ?? '—' }}</span>
+                                <span class="profile-stat-label">Обновление профиля</span>
+                            </div>
+                            <div class="profile-stat">
+                                <span class="profile-stat-value">{{ ($user && method_exists($user, 'appointments')) ? $user->appointments()->count() : '—' }}</span>
+                                <span class="profile-stat-label">Записей к мастерам</span>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
-                <div class="mx-auto grid w-full max-w-5xl grid-cols-1 gap-6 lg:grid-cols-12">
-                    <div class="lg:col-span-7">
-                        <div class="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-[0_30px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
-                            <h2 class="text-lg font-semibold text-white">Основная информация</h2>
-                            <p class="mt-1 text-sm text-white/50">Ваша персональная информация отображается в виде карточек, как в Filament.</p>
+                <div class="profile-column profile-column--forms">
+                    <section class="profile-card profile-card--form">
+                        <h2 class="profile-card-title">Редактирование профиля</h2>
+                        <p class="profile-card-subtitle">Измените персональные и контактные данные. Все поля сохраняются мгновенно и безопасно.</p>
 
-                            <dl class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Фамилия</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ $user?->surname ?? '—' }}</dd>
-                                </div>
+                        <form method="POST" action="{{ route('profile.update') }}" class="profile-form">
+                            @csrf
+                            @method('PUT')
 
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Имя</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ $user?->name ?? '—' }}</dd>
-                                </div>
-
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Отчество</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ $user?->patronymic ?? '—' }}</dd>
-                                </div>
-
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Email</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ $user?->email ?? '—' }}</dd>
-                                </div>
-
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Телефон</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ $user?->number ?? '—' }}</dd>
-                                </div>
-
-                                <div class="rounded-2xl border border-white/10 bg-slate-900/60 p-4 shadow-inner">
-                                    <dt class="text-xs font-semibold uppercase tracking-wide text-white/40">Дата регистрации</dt>
-                                    <dd class="mt-2 text-base font-medium text-white">{{ optional($user?->created_at)->format('d.m.Y H:i') ?? '—' }}</dd>
-                                </div>
-                            </dl>
-                        </div>
-                    </div>
-
-                    <div class="lg:col-span-5">
-                        <div class="flex h-full flex-col justify-between gap-6 rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/80 p-6 shadow-[0_30px_60px_-40px_rgba(15,23,42,0.6)] backdrop-blur">
-                            <div>
-                                <h2 class="text-lg font-semibold text-white">Доступ к профилю</h2>
-                                <p class="mt-1 text-sm text-white/50">Следите за актуальностью контактных данных и безопасностью аккаунта.</p>
+                            <div class="profile-form-group">
+                                <label for="surname" class="profile-form-label">Фамилия</label>
+                                <input id="surname" type="text" name="surname" value="{{ old('surname', $user?->surname) }}" class="profile-input" required>
                             </div>
 
-                            <div class="space-y-4">
-                                <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80">
-                                    <p class="text-xs uppercase tracking-[0.2em] text-white/50">Последнее обновление</p>
-                                    <p class="mt-2 text-base font-semibold text-white">{{ optional($user?->updated_at)->diffForHumans() ?? '—' }}</p>
-                                </div>
-
-                                <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80">
-                                    <p class="text-xs uppercase tracking-[0.2em] text-white/50">Email для входа</p>
-                                    <p class="mt-2 text-base font-semibold text-white">{{ $user?->email ?? '—' }}</p>
-                                </div>
-
-                                <a href="{{ route('logout') }}"
-                                   onclick="event.preventDefault(); document.getElementById('profile-logout-form').submit();"
-                                   class="group flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-500/90 to-red-500/90 px-5 py-4 text-sm font-semibold text-white shadow-lg transition hover:from-rose-500 hover:to-red-500">
-                                    <span>Выйти из аккаунта</span>
-                                    <svg class="h-5 w-5 transition group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M3 10a.75.75 0 01.75-.75h8.69l-2.22-2.22a.75.75 0 111.06-1.06l3.5 3.5a.75.75 0 010 1.06l-3.5 3.5a.75.75 0 01-1.06-1.06l2.22-2.22H3.75A.75.75 0 013 10z" clip-rule="evenodd" />
-                                    </svg>
-                                </a>
-                                <form id="profile-logout-form" class="hidden" method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                </form>
+                            <div class="profile-form-group">
+                                <label for="name" class="profile-form-label">Имя</label>
+                                <input id="name" type="text" name="name" value="{{ old('name', $user?->name) }}" class="profile-input" required>
                             </div>
-                        </div>
-                    </div>
+
+                            <div class="profile-form-group">
+                                <label for="patronymic" class="profile-form-label">Отчество</label>
+                                <input id="patronymic" type="text" name="patronymic" value="{{ old('patronymic', $user?->patronymic) }}" class="profile-input">
+                            </div>
+
+                            <div class="profile-form-group">
+                                <label for="email" class="profile-form-label">Email</label>
+                                <input id="email" type="email" name="email" value="{{ old('email', $user?->email) }}" class="profile-input" required>
+                            </div>
+
+                            <div class="profile-form-group">
+                                <label for="number" class="profile-form-label">Телефон</label>
+                                <input id="number" type="text" name="number" value="{{ old('number', $user?->number) }}" class="profile-input" placeholder="+7 (___) ___-__-__">
+                            </div>
+
+                            <button type="submit" class="profile-submit">Сохранить изменения</button>
+                        </form>
+                    </section>
+
+                    <section class="profile-card profile-card--form">
+                        <h2 class="profile-card-title">Смена пароля</h2>
+                        <p class="profile-card-subtitle">Используйте сложный пароль для защиты аккаунта. Новые данные вступают в силу сразу.</p>
+
+                        <form method="POST" action="{{ route('profile.password.update') }}" class="profile-form">
+                            @csrf
+                            @method('PUT')
+
+                            <div class="profile-form-group">
+                                <label for="current_password" class="profile-form-label">Текущий пароль</label>
+                                <input id="current_password" type="password" name="current_password" class="profile-input" required autocomplete="current-password">
+                            </div>
+
+                            <div class="profile-form-group">
+                                <label for="password" class="profile-form-label">Новый пароль</label>
+                                <input id="password" type="password" name="password" class="profile-input" required autocomplete="new-password">
+                            </div>
+
+                            <div class="profile-form-group">
+                                <label for="password_confirmation" class="profile-form-label">Подтверждение пароля</label>
+                                <input id="password_confirmation" type="password" name="password_confirmation" class="profile-input" required autocomplete="new-password">
+                            </div>
+
+                            <button type="submit" class="profile-submit profile-submit--secondary">Обновить пароль</button>
+                        </form>
+                    </section>
                 </div>
             </div>
         </div>

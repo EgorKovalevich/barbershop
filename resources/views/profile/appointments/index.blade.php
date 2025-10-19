@@ -116,7 +116,7 @@
                                         </div>
 
                                         <div class="profile-appointment-actions">
-                                            <a href="{{ route('appointments.edit', $appointment) }}" class="profile-submit profile-submit--secondary profile-appointment-edit">
+                                            <a href="{{ route('profile.appointments.edit', $appointment) }}" class="profile-submit profile-submit--secondary profile-appointment-edit">
                                                 {{ __('Редактировать запись') }}
                                             </a>
                                         </div>

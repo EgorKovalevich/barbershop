@@ -83,6 +83,12 @@ class IndexController extends Controller
             return back()->with('error_message', 'Нельзя записаться на прошедшее время.')->withInput();
         }
 
+        $availableSlots = $this->availableSlotsForBarber($barber, Carbon::parse($startDate));
+
+        if (! in_array($start->format('H:i'), $availableSlots, true)) {
+            return back()->with('error_message', 'Выбранное время недоступно.')->withInput();
+        }
+
         $hasOverlap = Event::query()
             ->where('barber_id', $validated['barber'])
             ->whereDate('start', $startDate)
@@ -139,41 +145,52 @@ class IndexController extends Controller
             return response()->json([]);
         }
 
-        $date = Carbon::parse($validated['date'])->toDateString();
-        $dayKey = strtolower(Carbon::parse($date)->englishDayOfWeek);
+        $date = Carbon::parse($validated['date']);
+
+        return response()->json($this->availableSlotsForBarber($barber, $date));
+    }
+
+    private function availableSlotsForBarber(Barber $barber, Carbon $date): array
+    {
+        $dayKey = strtolower($date->englishDayOfWeek);
         $workingDays = collect($barber->working_days ?? []);
 
         if (! $workingDays->contains($dayKey)) {
-            return response()->json([]);
+            return [];
         }
 
-        $startOfDay = Carbon::parse($date.' '.$barber->start_working_time);
-        $endOfDay = Carbon::parse($date.' '.$barber->end_working_time);
-        $slots = [];
+        $startOfDay = Carbon::parse($date->toDateString().' '.$barber->start_working_time);
+        $endOfDay = Carbon::parse($date->toDateString().' '.$barber->end_working_time);
+
+        if ($startOfDay->gte($endOfDay)) {
+            return [];
+        }
+
         $cursor = $startOfDay->copy();
+        $slots = [];
+        $now = Carbon::now()->seconds(0);
 
         while ($cursor->copy()->addHour()->lte($endOfDay)) {
-            if ($cursor->gt(Carbon::now())) {
+            if ($cursor->gte($now)) {
                 $slots[] = $cursor->format('H:i');
             }
+
             $cursor->addHour();
         }
 
         if (empty($slots)) {
-            return response()->json([]);
+            return [];
         }
 
         $busySlots = Event::query()
-            ->where('barber_id', $validated['barber'])
+            ->where('barber_id', $barber->user_id)
             ->whereDate('start', $date)
             ->whereIn('status', Event::blockingStatuses())
             ->pluck('start')
-            ->map(fn($start) => Carbon::parse($start)->format('H:i'))
+            ->map(fn ($start) => Carbon::parse($start)->format('H:i'))
             ->toArray();
 
-        $available = array_values(array_diff($slots, $busySlots));
-
-        return response()->json($available);
+        return array_values(array_diff($slots, $busySlots));
     }
 }
 

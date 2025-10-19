@@ -98,7 +98,8 @@
                                     <label for="start"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите день</label>
                                     <select id="start" name="start"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                            required>
                                         @foreach ($days as $day)
                                             <option value="{{ \Carbon\Carbon::parse($day)->toDateString() }}">
                                                 {{ \Carbon\Carbon::parse($day)->translatedFormat('d/m - l') }}
@@ -111,7 +112,8 @@
                                     <label for="startTime"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Выберите время</label>
                                     <select id="startTime" name="startTime"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white">
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                            required>
                                         <option value="" disabled selected>Выберите время</option>
                                     </select>
                                 </div>

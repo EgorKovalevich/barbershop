@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Client\AppointmentController as ClientAppointmentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    Route::middleware('client')->prefix('client')->name('client.')->group(function () {
+        Route::get('appointments', [ClientAppointmentController::class, 'index'])->name('appointments.index');
+        Route::get('appointments/{event}/edit', [ClientAppointmentController::class, 'edit'])->name('appointments.edit');
+        Route::put('appointments/{event}', [ClientAppointmentController::class, 'update'])->name('appointments.update');
+    });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('appointments', [AppointmentController::class, 'index'])->name('appointments.index');

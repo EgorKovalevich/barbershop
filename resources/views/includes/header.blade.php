@@ -56,6 +56,13 @@
                         </a>
                     @endif
 
+                    @if($user?->role === 'client' && Route::has('client.appointments.index'))
+                        <a href="{{ route('client.appointments.index') }}"
+                           class="btn-filament-primary">
+                            Мои записи
+                        </a>
+                    @endif
+
                     <form method="POST" action="{{ route('logout') }}" class="header-logout-form">
                         @csrf
                         <button type="submit" class="header-logout-button" title="{{ __('Выйти') }}">
@@ -122,6 +129,20 @@
                                         <span class="client-account-link-description">Просмотреть информацию аккаунта</span>
                                     </span>
                                 </a>
+                                @if($user?->role === 'client' && Route::has('client.appointments.index'))
+                                    <a href="{{ route('client.appointments.index') }}" class="client-account-link">
+                                        <span class="client-account-link-icon">
+                                            <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5h7.5A1.5 1.5 0 0117.25 6v11.25a1.5 1.5 0 01-1.5 1.5h-7.5z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25h6M9 11.25h6M9 14.25h3" />
+                                            </svg>
+                                        </span>
+                                        <span class="client-account-link-text">
+                                            <span class="client-account-link-title">Мои записи</span>
+                                            <span class="client-account-link-description">Просмотреть и изменить предстоящие визиты</span>
+                                        </span>
+                                    </a>
+                                @endif
                             </div>
 
                             <div class="client-account-logout">

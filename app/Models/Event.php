@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class Event extends BaseEvent
 {
@@ -61,6 +62,12 @@ class Event extends BaseEvent
 
     protected static function booted(): void
     {
+        static::creating(function (self $event): void {
+            if (! $event->getKey()) {
+                $event->{$event->getKeyName()} = (string) Str::uuid();
+            }
+        });
+
         static::saving(function (self $event): void {
             if ($event->barber_id) {
                 $event->participants = [$event->barber_id];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentsController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,4 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/appointments', [AppointmentsController::class, 'index'])->name('appointments.index');
+    Route::get('/appointments/{appointment}/edit', [AppointmentsController::class, 'edit'])->name('appointments.edit');
+    Route::put('/appointments/{appointment}', [AppointmentsController::class, 'update'])->name('appointments.update');
 });

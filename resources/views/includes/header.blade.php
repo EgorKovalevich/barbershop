@@ -115,6 +115,20 @@
                                         <span class="client-account-link-description">Просмотреть информацию аккаунта</span>
                                     </span>
                                 </a>
+                                @if($user?->role === 'client')
+                                    <a href="{{ route('appointments.index') }}" class="client-account-link">
+                                        <span class="client-account-link-icon">
+                                            <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5l7.5 7.5L21 7.5" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l7.5 7.5L21 12" />
+                                            </svg>
+                                        </span>
+                                        <span class="client-account-link-text">
+                                            <span class="client-account-link-title">Мои записи</span>
+                                            <span class="client-account-link-description">История и управление бронированиями</span>
+                                        </span>
+                                    </a>
+                                @endif
                             </div>
 
                             <div class="client-account-logout">

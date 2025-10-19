@@ -8,6 +8,17 @@
                 <h2>УСЛУГИ | ЦЕНЫ</h2>
             </div>
 
+            @auth
+                @if(auth()->user()->role === 'admin')
+                    <div class="mb-6 text-right">
+                        <a href="{{ route('filament.pages.dashboard') }}"
+                           class="inline-flex items-center gap-2 rounded-lg bg-yellow-500 px-4 py-2 text-sm font-semibold uppercase text-white transition hover:bg-yellow-600">
+                            Перейти в админку
+                        </a>
+                    </div>
+                @endif
+            @endauth
+
             @foreach ($categories->sortBy('amount') as $category)
                 <div class="container_services cursor-pointer" data-modal-target="authentication-modal"
                      data-modal-toggle="authentication-modal">

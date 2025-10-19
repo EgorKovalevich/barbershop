@@ -610,6 +610,13 @@ nav{
     background-color: #050403;
 }
 
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
 .slick-slider{
     min-width: 0;
 }
@@ -1256,15 +1263,16 @@ nav{
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
-    width: 100%;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
     gap: 16px;
-    width: 100%;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .header-actions-controls {

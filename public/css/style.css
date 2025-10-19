@@ -1989,3 +1989,270 @@ nav{
         font-size: 32px;
     }
 }
+
+.admin-appointments-section {
+    background: #050403;
+    padding: 120px 0 100px;
+    color: #f8fafc;
+}
+
+.admin-appointments-header {
+    max-width: 720px;
+    margin-bottom: 40px;
+}
+
+.admin-appointments-header h1 {
+    font-size: 36px;
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.admin-appointments-header p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.admin-appointments-alert {
+    padding: 18px 24px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.admin-appointments-alert--success {
+    background: rgba(34, 197, 94, 0.16);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #bbf7d0;
+}
+
+.admin-appointments-alert--error {
+    background: rgba(248, 113, 113, 0.16);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    color: #fecaca;
+}
+
+.admin-appointments-alert-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.admin-appointments-alert ul {
+    padding-left: 18px;
+}
+
+.admin-appointments-alert li {
+    list-style: disc;
+}
+
+.admin-appointments-empty {
+    padding: 48px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.4);
+    text-align: center;
+    color: rgba(248, 250, 252, 0.7);
+}
+
+.admin-appointments-table-wrapper {
+    overflow-x: auto;
+    background: rgba(15, 23, 42, 0.35);
+    border-radius: 20px;
+    padding: 8px;
+}
+
+.admin-appointments-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 780px;
+}
+
+.admin-appointments-table thead th {
+    text-align: left;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(248, 250, 252, 0.6);
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.08);
+}
+
+.admin-appointments-table tbody td {
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.06);
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.admin-appointments-cell-title {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.admin-appointments-note {
+    display: block;
+    color: rgba(248, 250, 252, 0.6);
+    font-size: 13px;
+}
+
+.admin-appointments-meta {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(248, 250, 252, 0.45);
+    margin-bottom: 4px;
+}
+
+.admin-appointments-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.admin-appointments-status--scheduled {
+    background: rgba(251, 191, 36, 0.18);
+    color: #fbbf24;
+}
+
+.admin-appointments-status--completed {
+    background: rgba(34, 197, 94, 0.18);
+    color: #4ade80;
+}
+
+.admin-appointments-status--no_show {
+    background: rgba(248, 113, 113, 0.18);
+    color: #f87171;
+}
+
+.admin-appointments-status--cancelled {
+    background: rgba(148, 163, 184, 0.18);
+    color: #cbd5f5;
+}
+
+.admin-appointments-actions {
+    text-align: right;
+}
+
+.admin-appointments-actions .btn-filament-outline {
+    padding: 10px 20px;
+}
+
+.admin-appointments-pagination {
+    margin-top: 28px;
+}
+
+.admin-appointments-form-card {
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 22px;
+    padding: 32px;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.35);
+}
+
+.admin-appointments-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.admin-appointments-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.admin-appointments-field {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-appointments-field--wide {
+    grid-column: span 2;
+}
+
+.admin-appointments-label {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(248, 250, 252, 0.6);
+}
+
+.admin-appointments-input {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(248, 250, 252, 0.12);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #f8fafc;
+    font-size: 15px;
+    transition: border-color .3s ease, box-shadow .3s ease;
+}
+
+.admin-appointments-input:focus {
+    outline: none;
+    border-color: rgba(251, 191, 36, 0.8);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.25);
+}
+
+.admin-appointments-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.admin-appointments-actions-bar .btn-filament-outline,
+.admin-appointments-actions-bar .btn-filament-primary {
+    flex: none;
+}
+
+@media (max-width: 1024px) {
+    .admin-appointments-section {
+        padding: 100px 0 80px;
+    }
+
+    .admin-appointments-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-appointments-field--wide {
+        grid-column: span 1;
+    }
+
+    .admin-appointments-actions-bar {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .admin-appointments-actions-bar .btn-filament-outline,
+    .admin-appointments-actions-bar .btn-filament-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-appointments-table {
+        min-width: 100%;
+    }
+
+    .admin-appointments-header h1 {
+        font-size: 30px;
+    }
+
+    .admin-appointments-header p {
+        font-size: 15px;
+    }
+}
+
+.admin-appointments-field textarea.admin-appointments-input {
+    min-height: 120px;
+    resize: vertical;
+}

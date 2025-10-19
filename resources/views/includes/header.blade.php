@@ -49,6 +49,13 @@
                         </a>
                     @endif
 
+                    @if($user?->role === 'admin' && Route::has('admin.appointments.index'))
+                        <a href="{{ route('admin.appointments.index') }}"
+                           class="btn-filament-primary">
+                            Записи клиентов
+                        </a>
+                    @endif
+
                     <form method="POST" action="{{ route('logout') }}" class="header-logout-form">
                         @csrf
                         <button type="submit" class="header-logout-button" title="{{ __('Выйти') }}">

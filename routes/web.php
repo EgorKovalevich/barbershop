@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,3 +21,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Main'], function () {
 });
 
 Auth::routes();
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', ProfileController::class)->name('profile.show');
+});

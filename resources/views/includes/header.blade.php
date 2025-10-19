@@ -117,7 +117,7 @@
                                 </a>
 
                                 @if($user?->isClient())
-                                    <a href="{{ route('profile.appointments.index') }}" class="client-account-link">
+                                    <a href="{{ route('appointments.index') }}" class="client-account-link">
                                         <span class="client-account-link-icon">
                                             <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5" />

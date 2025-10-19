@@ -11,7 +11,6 @@ use App\Models\Barber;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class IndexController extends Controller
@@ -105,7 +104,6 @@ class IndexController extends Controller
         }
 
         $event = Event::create([
-            'id' => (string) Str::uuid(),
             'subject' => $validated['subject'],
             'body' => $validated['body'] ?? null,
             'number' => $validated['number'],

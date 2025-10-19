@@ -39,12 +39,18 @@
 
                         <div class="px-6 py-6 lg:px-8">
                             <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white text-center">Запись</h3>
+                            @php
+                                $authUser = auth()->user();
+                                $defaultName = $authUser
+                                    ? trim(collect([$authUser->surname ?? null, $authUser->name ?? null, $authUser->patronymic ?? null])->filter()->join(' '))
+                                    : null;
+                            @endphp
                             <form class="space-y-6" method="post" action="{{ url('store-form') }}">
                                 @csrf
                                 <div>
                                     <label for="subject"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Введите свое имя</label>
-                                    <input type="text" name="subject" id="subject" value="{{ old('subject') }}"
+                                    <input type="text" name="subject" id="subject" value="{{ old('subject', $defaultName) }}"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                                            placeholder="Имя" required>
                                 </div>
@@ -52,7 +58,7 @@
                                 <div>
                                     <label for="number"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Введите свой номер</label>
-                                    <input type="text" name="number" id="number" value="{{ old('number') }}"
+                                    <input type="text" name="number" id="number" value="{{ old('number', optional($authUser)->number) }}"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                                            placeholder="+375(33)3333-333" required>
                                 </div>

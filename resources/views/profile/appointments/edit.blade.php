@@ -59,7 +59,7 @@
                         <h2 class="profile-card-title">Данные записи</h2>
                         <p class="profile-card-subtitle">Измените выбранные параметры и сохраните, чтобы обновить визит.</p>
 
-                        <form method="POST" action="{{ route('profile.appointments.update', $appointment) }}" class="profile-form">
+                        <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="profile-form">
                             @csrf
                             @method('PUT')
 
@@ -146,7 +146,7 @@
                             </div>
 
                             <div class="profile-form-actions">
-                                <a href="{{ route('profile.appointments.index') }}" class="profile-submit profile-submit--secondary">{{ __('Вернуться к списку') }}</a>
+                                <a href="{{ route('appointments.index') }}" class="profile-submit profile-submit--secondary">{{ __('Вернуться к списку') }}</a>
                                 <button type="submit" class="profile-submit">{{ __('Сохранить изменения') }}</button>
                             </div>
                         </form>

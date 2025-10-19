@@ -99,7 +99,7 @@ class ClientAppointmentController extends Controller
         ])->save();
 
         return redirect()
-            ->route('profile.appointments.index')
+            ->route('appointments.index')
             ->with('appointmentUpdated', __('Запись успешно обновлена.'));
     }
 

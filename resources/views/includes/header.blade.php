@@ -115,23 +115,6 @@
                                         <span class="client-account-link-description">Просмотреть информацию аккаунта</span>
                                     </span>
                                 </a>
-
-                                @if($user?->isClient())
-                                    <a href="{{ route('profile.appointments.index') }}" class="client-account-link">
-                                        <span class="client-account-link-icon">
-                                            <svg class="client-account-link-icon-svg" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h7.5" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 12h7.5" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 17.25H12" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25A2.25 2.25 0 016 3h12a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0118 21H6a2.25 2.25 0 01-2.25-2.25V5.25z" />
-                                            </svg>
-                                        </span>
-                                        <span class="client-account-link-text">
-                                            <span class="client-account-link-title">Мои записи</span>
-                                            <span class="client-account-link-description">Просмотр и управление визитами</span>
-                                        </span>
-                                    </a>
-                                @endif
                             </div>
 
                             <div class="client-account-logout">

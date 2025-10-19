@@ -64,6 +64,53 @@
             @endif
 
             <div class="profile-content">
+                <div class="profile-column profile-column--details">
+                    <section class="profile-card profile-card--details">
+                        <h2 class="profile-card-title">Текущая запись</h2>
+                        <p class="profile-card-subtitle">Проверьте информацию о визите перед обновлением.</p>
+
+                        <article class="profile-appointment">
+                            <div class="profile-appointment-header">
+                                <div>
+                                    <span class="profile-appointment-date">{{ optional($appointment->start)->translatedFormat('d F Y') }}</span>
+                                    <span class="profile-appointment-time">{{ optional($appointment->start)->format('H:i') }} – {{ optional($appointment->end)->format('H:i') }}</span>
+                                </div>
+                                <span class="profile-appointment-status">{{ App\Models\Event::statusOptions()[$appointment->status] ?? 'Без статуса' }}</span>
+                            </div>
+
+                            <dl class="profile-appointment-details">
+                                <div class="profile-appointment-detail">
+                                    <dt>Барбер</dt>
+                                    <dd>{{ $barberName ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Услуга</dt>
+                                    <dd>{{ optional($categories->get($appointment->category))->name ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Контактный телефон</dt>
+                                    <dd>{{ $appointment->number ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Комментарий</dt>
+                                    <dd>{{ $appointment->body ?? '—' }}</dd>
+                                </div>
+                            </dl>
+                        </article>
+                    </section>
+
+                    <section class="profile-card profile-card--activity">
+                        <h2 class="profile-card-title">Советы по изменению записи</h2>
+                        <p class="profile-card-subtitle">Проверьте расписание барбера и выбирайте время, свободное от других визитов.</p>
+
+                        <ul class="profile-tips-list">
+                            <li>Если нужное время занято, попробуйте выбрать другого барбера.</li>
+                            <li>Избегайте выбора прошедших дат — система их не примет.</li>
+                            <li>Сообщите мастеру о пожеланиях в комментарии.</li>
+                        </ul>
+                    </section>
+                </div>
+
                 <div class="profile-column profile-column--forms">
                     <section class="profile-card profile-card--form">
                         <h2 class="profile-card-title">Обновление записи</h2>
@@ -154,19 +201,6 @@
                                 <button type="submit" class="profile-submit">Сохранить изменения</button>
                             </div>
                         </form>
-                    </section>
-                </div>
-
-                <div class="profile-column profile-column--details">
-                    <section class="profile-card profile-card--activity">
-                        <h2 class="profile-card-title">Советы по изменению записи</h2>
-                        <p class="profile-card-subtitle">Проверьте расписание барбера и выбирайте время, свободное от других визитов.</p>
-
-                        <ul class="profile-tips-list">
-                            <li>Если нужное время занято, попробуйте выбрать другого барбера.</li>
-                            <li>Избегайте выбора прошедших дат — система их не примет.</li>
-                            <li>Сообщите мастеру о пожеланиях в комментарии.</li>
-                        </ul>
                     </section>
                 </div>
             </div>

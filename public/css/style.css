@@ -1326,14 +1326,14 @@ nav{
 .btn-filament-primary {
     background: linear-gradient(135deg, #f59e0b, #d97706);
     color: #fff;
-    box-shadow: 0 15px 40px rgba(214, 158, 46, .35);
+    box-shadow: 4px 5px 20px rgba(214, 158, 46, .35);
     border: none;
 }
 
 .btn-filament-primary:hover,
 .btn-filament-primary:focus {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    box-shadow: 0 20px 45px rgba(214, 158, 46, .45);
+    box-shadow: 4px 8px 16px rgba(214, 158, 46, .45);
 }
 
 .btn-filament-outline {

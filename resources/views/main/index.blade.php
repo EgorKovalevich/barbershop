@@ -15,7 +15,7 @@
                         <h3 class="uppercase">{{ $category->name }}</h3>
                     </div>
                     <div class="strings_price">
-                        <p>R${{ $category->amount }}</p>
+                        <p>{{ $category->amount }} Br</p>
                     </div>
                 </div>
             @endforeach
@@ -38,7 +38,7 @@
                         </button>
 
                         <div class="px-6 py-6 lg:px-8">
-                            <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white text-center">Сделать расписание</h3>
+                            <h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white text-center">Запись</h3>
                             <form class="space-y-6" method="post" action="{{ url('store-form') }}">
                                 @csrf
                                 <div>
@@ -46,7 +46,7 @@
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Введите свое имя</label>
                                     <input type="text" name="subject" id="subject" value="{{ old('subject') }}"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                           placeholder="John Doe" required>
+                                           placeholder="Имя" required>
                                 </div>
 
                                 <div>
@@ -54,7 +54,7 @@
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Введите свой номер</label>
                                     <input type="text" name="number" id="number" value="{{ old('number') }}"
                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                           placeholder="(22)99843-8864" required>
+                                           placeholder="+375(33)3333-333" required>
                                 </div>
 
                                 <div>

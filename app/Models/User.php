@@ -41,6 +41,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Barber::class);
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Event::class, 'organizer_id')->orderByDesc('start');
+    }
+
     public function canAccessFilament(): bool
     {
         return $this->role === 'admin';

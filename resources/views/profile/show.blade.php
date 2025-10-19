@@ -5,6 +5,19 @@
         <div class="profile-hero">
             <div class="wrapper">
                 <div class="profile-hero-inner">
+                    <div class="profile-hero-avatar">
+                        <div class="profile-avatar">
+                            @php
+                                $initials = collect([$user?->name , $user?->surname])
+                                    ->filter()
+                                    ->map(fn ($part) => mb_substr($part, 0, 1))
+                                    ->join('') ?: ($user?->email ? mb_substr($user->email, 0, 1) : '—');
+                            @endphp
+
+                            <span class="profile-avatar-initials">{{ $initials }}</span>
+                        </div>
+                        <span class="profile-avatar-caption">Персональный аккаунт</span>
+                    </div>
                     <div class="profile-hero-text">
                         <span class="profile-hero-label">{{ __('Панель профиля') }}</span>
                         <h1 class="profile-hero-title">{{ trim(($user?->surname ?? '') . ' ' . ($user?->name ?? '')) ?: $user?->email }}</h1>
@@ -24,19 +37,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="profile-hero-avatar">
-                        <div class="profile-avatar">
-                            @php
-                                $initials = collect([$user?->surname, $user?->name])
-                                    ->filter()
-                                    ->map(fn ($part) => mb_substr($part, 0, 1))
-                                    ->join('') ?: ($user?->email ? mb_substr($user->email, 0, 1) : '—');
-                            @endphp
 
-                            <span class="profile-avatar-initials">{{ $initials }}</span>
-                        </div>
-                        <span class="profile-avatar-caption">Персональный аккаунт</span>
-                    </div>
                 </div>
             </div>
         </div>

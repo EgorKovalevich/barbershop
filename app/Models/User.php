@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Event;
 use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -40,16 +39,6 @@ class User extends Authenticatable implements FilamentUser
     public function barber()
     {
         return $this->hasOne(Barber::class);
-    }
-
-    public function appointments()
-    {
-        return $this->hasMany(Event::class, 'organizer_id');
-    }
-
-    public function isClient(): bool
-    {
-        return $this->role === 'client';
     }
 
     public function canAccessFilament(): bool

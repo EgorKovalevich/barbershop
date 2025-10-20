@@ -25,5 +25,10 @@ class EditPayment extends EditRecord
             ->title('Обновленный платеж')
             ->body('Оплата успешно обновлена!');
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->previousUrl ?? $this->getResource()::getUrl('index');
+    }
 }
 

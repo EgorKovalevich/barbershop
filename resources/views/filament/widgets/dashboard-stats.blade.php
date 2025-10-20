@@ -14,18 +14,17 @@
                     @foreach ($filters as $key => $label)
                         @php
                             $buttonClasses = \Illuminate\Support\Arr::toCssClasses([
-                                'transition focus-visible:ring-2 focus-visible:ring-offset-2',
-                                'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-gray-900' => $currentFilter === $key,
-                                'ring-0' => $currentFilter !== $key,
+                                'relative min-w-[96px] overflow-hidden rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900',
+                                'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 ring-0 scale-[1.02]' => $currentFilter === $key,
+                                'bg-white/80 text-gray-600 ring-1 ring-gray-200/70 hover:ring-primary-200 hover:text-primary-600 hover:shadow-md dark:bg-gray-800/70 dark:text-gray-300 dark:ring-gray-700/70 dark:hover:ring-primary-400/40 dark:hover:text-primary-300' => $currentFilter !== $key,
                             ]);
                         @endphp
                         <x-filament::button
                             type="button"
-                            size="sm"
-                            :color="$currentFilter === $key ? 'primary' : 'gray'"
                             class="{{ $buttonClasses }}"
                             wire:click="setFilter({{ \Illuminate\Support\Js::from($key) }})"
                             wire:loading.attr="disabled"
+                            wire:loading.class="scale-95 opacity-80"
                             wire:target="setFilter"
                             wire:key="dashboard-filter-{{ $key }}"
                         >

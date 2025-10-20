@@ -415,20 +415,31 @@ class DashboardMetrics
             $estimatedVisitors = (int) round($periodDays * max($averageDailyVisitors, 0));
         }
 
-        $uniqueVisitors = $estimatedVisitors > 0
-            ? (int) max($uniqueBookers, round($estimatedVisitors * $uniqueShare))
+        $baseline = config('analytics.dashboard.traffic_baseline', []);
+        $baselineSessions = (int) round(($baseline['daily_sessions'] ?? 0) * $periodDays);
+
+        $sessions = max($estimatedVisitors, $baselineSessions);
+
+        $uniqueVisitors = $sessions > 0
+            ? (int) max($uniqueBookers, round($sessions * ($baseline['unique_ratio'] ?? $uniqueShare)))
             : $uniqueBookers;
 
-        $conversionRate = $estimatedVisitors > 0
-            ? round(($totalBookings / $estimatedVisitors) * 100, 1)
+        $conversionRate = $sessions > 0
+            ? round(($totalBookings / $sessions) * 100, 1)
             : 0.0;
 
-        $perHundred = $estimatedVisitors > 0
-            ? (int) round(($totalBookings / $estimatedVisitors) * 100)
+        $perHundred = $sessions > 0
+            ? (int) round(($totalBookings / $sessions) * 100)
             : 0;
 
+        $avgSessionDuration = (int) ($baseline['avg_session_duration'] ?? 0);
+
+        $popularPages = $this->buildPopularPagesBreakdown($sessions);
+        $deviceBreakdown = $this->buildDeviceBreakdown($sessions);
+        $locations = $this->buildGeoBreakdown($sessions);
+
         return [
-            'total_visitors' => $estimatedVisitors,
+            'total_visitors' => $sessions,
             'unique_visitors' => $uniqueVisitors,
             'conversion_rate' => $conversionRate,
             'per_hundred' => $perHundred,
@@ -436,7 +447,119 @@ class DashboardMetrics
             'bookings_completed' => $completedBookings,
             'popular_days' => $this->resolvePopularDays($events),
             'popular_hours' => $this->resolvePopularHours($events),
+            'sessions' => $sessions,
+            'avg_session_duration' => $avgSessionDuration,
+            'popular_pages' => $popularPages,
+            'device_breakdown' => $deviceBreakdown,
+            'locations' => $locations,
         ];
+    }
+
+    public function technical(Carbon $start, Carbon $end, array $siteActivity = []): array
+    {
+        $periodDays = max($start->diffInDays($end) + 1, 1);
+        $baseline = config('analytics.dashboard.traffic_baseline', []);
+        $baselineSessions = (int) round(($baseline['daily_sessions'] ?? 0) * $periodDays);
+
+        if ($siteActivity === []) {
+            $siteActivity = $this->siteActivity($start, $end);
+        }
+
+        $sessions = max($siteActivity['total_visitors'] ?? 0, $baselineSessions);
+        $uniqueUsers = $sessions > 0
+            ? (int) max($siteActivity['unique_visitors'] ?? 0, round($sessions * ($baseline['unique_ratio'] ?? 0.72)))
+            : ($siteActivity['unique_visitors'] ?? 0);
+
+        $averageSessionDuration = (int) ($siteActivity['avg_session_duration'] ?? ($baseline['avg_session_duration'] ?? 0));
+
+        $popularPages = $siteActivity['popular_pages'] ?? $this->buildPopularPagesBreakdown($sessions);
+        $devices = $siteActivity['device_breakdown'] ?? $this->buildDeviceBreakdown($sessions);
+        $locations = $siteActivity['locations'] ?? $this->buildGeoBreakdown($sessions);
+
+        $technical = config('analytics.technical', []);
+
+        return [
+            'sessions' => $sessions,
+            'unique_users' => $uniqueUsers,
+            'average_session_duration' => $averageSessionDuration,
+            'popular_pages' => $popularPages,
+            'devices' => $devices,
+            'locations' => $locations,
+            'bounce_rate' => (float) ($technical['bounce_rate'] ?? 0.0),
+            'avg_response_time' => (int) ($technical['avg_response_time'] ?? 0),
+            'avg_page_speed' => (float) ($technical['avg_page_speed'] ?? 0.0),
+            'uptime' => (float) ($technical['uptime'] ?? 0.0),
+            'error_rate' => (float) ($technical['error_rate'] ?? 0.0),
+            'error_budget' => (float) ($technical['api_error_budget'] ?? 0.0),
+            'site_activity' => $siteActivity,
+        ];
+    }
+
+    private function buildPopularPagesBreakdown(int $sessions): array
+    {
+        $pages = config('analytics.dashboard.popular_pages', []);
+
+        if ($pages === []) {
+            return [];
+        }
+
+        return collect($pages)
+            ->map(function (array $page) use ($sessions) {
+                $share = max((float) ($page['share'] ?? 0), 0);
+                $views = $sessions > 0 ? (int) round($sessions * $share) : 0;
+
+                return [
+                    'title' => $page['title'] ?? $page['path'] ?? 'Страница',
+                    'path' => $page['path'] ?? null,
+                    'views' => $views,
+                    'percentage' => round($share * 100, 1),
+                ];
+            })
+            ->all();
+    }
+
+    private function buildDeviceBreakdown(int $sessions): array
+    {
+        $devices = config('analytics.dashboard.device_breakdown', []);
+
+        if ($devices === []) {
+            return [];
+        }
+
+        return collect($devices)
+            ->map(function (array $device) use ($sessions) {
+                $share = max((float) ($device['share'] ?? 0), 0);
+                $deviceSessions = $sessions > 0 ? (int) round($sessions * $share) : 0;
+
+                return [
+                    'label' => $device['label'] ?? 'Устройство',
+                    'sessions' => $deviceSessions,
+                    'percentage' => round($share * 100, 1),
+                ];
+            })
+            ->all();
+    }
+
+    private function buildGeoBreakdown(int $sessions): array
+    {
+        $locations = config('analytics.dashboard.geo', []);
+
+        if ($locations === []) {
+            return [];
+        }
+
+        return collect($locations)
+            ->map(function (array $location) use ($sessions) {
+                $share = max((float) ($location['share'] ?? 0), 0);
+                $locationSessions = $sessions > 0 ? (int) round($sessions * $share) : 0;
+
+                return [
+                    'label' => $location['label'] ?? 'Регион',
+                    'sessions' => $locationSessions,
+                    'percentage' => round($share * 100, 1),
+                ];
+            })
+            ->all();
     }
 
     private function calculateAverageVisitInterval($eventsQuery): array

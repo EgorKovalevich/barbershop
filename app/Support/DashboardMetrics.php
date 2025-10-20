@@ -1,55 +1,112 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Support;
 
-use App\Filament\Widgets\Concerns\HasPeriodFilters;
 use App\Models\Barber;
 use App\Models\Category;
 use App\Models\Event;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
-use Filament\Widgets\StatsOverviewWidget;
-use Filament\Widgets\StatsOverviewWidget\Card;
 use Illuminate\Support\Str;
 
-class BarberServiceStats extends StatsOverviewWidget
+class DashboardMetrics
 {
-    use HasPeriodFilters;
-
-    protected static ?string $pollingInterval = '60s';
-    protected static ?string $heading = '3. Барберы и услуги';
-
-    protected function getCards(): array
+    /**
+     * Collect booking metrics for the given period.
+     */
+    public function bookings(Carbon $start, Carbon $end): array
     {
-        $filter = $this->filter ?? $this->getDefaultFilter();
+        $baseQuery = Event::query()->whereBetween('start', [$start, $end]);
 
-        $period = $this->resolvePeriods($filter);
-        $start = $period[0];
-        $end = $period[1];
+        $totalBookings = (clone $baseQuery)->count();
+        $completed = (clone $baseQuery)->where('status', Event::STATUS_COMPLETED)->count();
+        $attendedClients = (clone $baseQuery)
+            ->where('status', Event::STATUS_COMPLETED)
+            ->whereNotNull('organizer_id')
+            ->distinct()
+            ->count('organizer_id');
 
-        $metrics = $this->calculateMetrics($start, $end);
+        $cancelled = (clone $baseQuery)->where('status', Event::STATUS_CANCELLED)->count();
+        $noShow = (clone $baseQuery)->where('status', Event::STATUS_NO_SHOW)->count();
+
+        $attendanceRate = $totalBookings > 0 ? round(($attendedClients / $totalBookings) * 100, 1) : 0.0;
+        $cancellationsTotal = $cancelled + $noShow;
+        $cancellationRate = $totalBookings > 0 ? round(($cancellationsTotal / $totalBookings) * 100, 1) : 0.0;
 
         return [
-            Card::make('Клиентов на мастера', $metrics['clients_per_barber'])
-                ->description($metrics['clients_per_barber_description'])
-                ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make('Средний чек по мастеру', $metrics['average_check'])
-                ->description($metrics['average_check_description'])
-                ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make('Загрузка барбера', $metrics['average_occupancy'])
-                ->description($metrics['average_occupancy_description'])
-                ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make('Процент рабочего времени, занятого записями', $metrics['workload_percentage'])
-                ->description($metrics['workload_description'])
-                ->descriptionColor($metrics['workload_color'])
-                ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make('ТОП-3 популярных услуг', $metrics['top_services_text'])
-                ->description($metrics['top_services_description'])
-                ->extraAttributes(['class' => 'min-h-[164px]']),
+            'total_bookings' => $totalBookings,
+            'completed' => $completed,
+            'attended_clients' => $attendedClients,
+            'attendance_rate' => $attendanceRate,
+            'cancelled' => $cancelled,
+            'no_show' => $noShow,
+            'cancellations_total' => $cancellationsTotal,
+            'cancellation_rate' => $cancellationRate,
         ];
     }
 
-    private function calculateMetrics(Carbon $start, Carbon $end): array
+    /**
+     * Collect client metrics for the given period.
+     */
+    public function clients(Carbon $start, Carbon $end): array
+    {
+        $eventsQuery = Event::query()
+            ->whereBetween('start', [$start, $end])
+            ->whereNotNull('organizer_id');
+
+        $totalVisits = (clone $eventsQuery)->count();
+        $uniqueClients = (clone $eventsQuery)->distinct('organizer_id')->count('organizer_id');
+
+        $eventsTable = (new Event())->getTable();
+        $aliasedTable = $eventsTable . ' as current';
+
+        $newClients = Event::query()
+            ->from($aliasedTable)
+            ->whereBetween('current.start', [$start, $end])
+            ->whereNotNull('current.organizer_id')
+            ->whereNotExists(function ($query) use ($eventsTable, $start) {
+                $query->selectRaw(1)
+                    ->from($eventsTable . ' as previous')
+                    ->whereColumn('previous.organizer_id', 'current.organizer_id')
+                    ->where('previous.start', '<', $start);
+            })
+            ->distinct('current.organizer_id')
+            ->count('current.organizer_id');
+
+        $returningClients = Event::query()
+            ->from($aliasedTable)
+            ->whereBetween('current.start', [$start, $end])
+            ->whereNotNull('current.organizer_id')
+            ->whereExists(function ($query) use ($eventsTable, $start) {
+                $query->selectRaw(1)
+                    ->from($eventsTable . ' as previous')
+                    ->whereColumn('previous.organizer_id', 'current.organizer_id')
+                    ->where('previous.start', '<', $start);
+            })
+            ->distinct('current.organizer_id')
+            ->count('current.organizer_id');
+
+        $returningRate = $uniqueClients > 0 ? round(($returningClients / $uniqueClients) * 100, 1) : 0.0;
+        $averageVisitsPerClient = $uniqueClients > 0 ? round($totalVisits / $uniqueClients, 1) : 0.0;
+
+        [$averageInterval, $intervalCount] = $this->calculateAverageVisitInterval(clone $eventsQuery);
+
+        return [
+            'new_clients' => $newClients,
+            'returning_clients' => $returningClients,
+            'returning_rate' => $returningRate,
+            'total_visits' => $totalVisits,
+            'unique_clients' => $uniqueClients,
+            'average_visits_per_client' => $averageVisitsPerClient,
+            'average_visit_interval' => $averageInterval,
+            'interval_count' => $intervalCount,
+        ];
+    }
+
+    /**
+     * Collect barber and service metrics for the given period.
+     */
+    public function barberServices(Carbon $start, Carbon $end): array
     {
         $barbers = Barber::query()->with('user')->get();
 
@@ -228,45 +285,63 @@ class BarberServiceStats extends StatsOverviewWidget
             }
         }
 
-        $topServicesText = $topServicesList === []
-            ? 'Нет данных'
-            : collect($topServicesList)
-                ->values()
-                ->map(fn (array $service, int $index) => ($index + 1) . '. ' . $service['name'] . ' — ' . $service['count'])
-                ->implode(' · ');
-
         $servicesTotal = array_sum($serviceCounts);
 
-        $leaderDescription = $topBarber !== null
-            ? sprintf('Лидер: %s — %.1f%% · записей %d', $topBarber['name'], $topBarber['occupancy'], $topBarber['bookings'])
-            : 'Нет активных записей';
-
         return [
-            'clients_per_barber' => number_format($clientsPerBarber, 1, ',', ' '),
-            'clients_per_barber_description' => $activeBarberCount > 0
-                ? sprintf('Всего %d клиентов · %d барбера(-ов)', $totalClients, $activeBarberCount)
-                : 'Нет данных за период',
-            'average_check' => 'Br ' . number_format($averageCheck, 2, ',', ' '),
-            'average_check_description' => $totalRevenue > 0
-                ? sprintf('Выручка Br %s · визитов %d', number_format($totalRevenue, 0, ',', ' '), $totalCompletedVisits)
-                : 'Нет завершённых визитов',
-            'average_occupancy' => sprintf('%.1f%%', $averageOccupancy),
-            'average_occupancy_description' => $activeBarberCount > 0
-                ? $leaderDescription
-                : 'Нет данных за период',
-            'workload_percentage' => sprintf('%.1f%%', $workloadPercentage),
-            'workload_description' => $totalAvailableMinutes > 0
-                ? sprintf('Занято %s из %s ч.',
-                    number_format($totalOccupiedMinutes / 60, 1, ',', ' '),
-                    number_format($totalAvailableMinutes / 60, 1, ',', ' ')
-                )
-                : 'Нет графиков для расчёта',
-            'workload_color' => $workloadPercentage > 85 ? 'danger' : 'success',
-            'top_services_text' => $topServicesText,
-            'top_services_description' => $topServicesList === []
-                ? 'Нет данных за период'
-                : sprintf('На основе %d визитов', $servicesTotal),
+            'clients_per_barber' => [
+                'average' => $clientsPerBarber,
+                'total_clients' => $totalClients,
+                'active_barbers' => $activeBarberCount,
+            ],
+            'average_check' => [
+                'amount' => $averageCheck,
+                'total_revenue' => $totalRevenue,
+                'completed_visits' => $totalCompletedVisits,
+            ],
+            'average_occupancy' => [
+                'percentage' => $averageOccupancy,
+                'leader' => $topBarber,
+            ],
+            'workload' => [
+                'percentage' => $workloadPercentage,
+                'occupied_minutes' => $totalOccupiedMinutes,
+                'available_minutes' => $totalAvailableMinutes,
+            ],
+            'top_services' => [
+                'items' => $topServicesList,
+                'total' => $servicesTotal,
+            ],
         ];
+    }
+
+    private function calculateAverageVisitInterval($eventsQuery): array
+    {
+        $intervals = [];
+        $previousVisits = [];
+
+        $events = $eventsQuery
+            ->orderBy('organizer_id')
+            ->orderBy('start')
+            ->get(['organizer_id', 'start']);
+
+        foreach ($events as $event) {
+            $organizerId = $event->organizer_id;
+
+            if (isset($previousVisits[$organizerId])) {
+                $diffMinutes = $event->start->diffInMinutes($previousVisits[$organizerId]);
+                $intervals[] = $diffMinutes / 1440;
+            }
+
+            $previousVisits[$organizerId] = $event->start;
+        }
+
+        if ($intervals === []) {
+            return [null, 0];
+        }
+
+        $averageInterval = round(array_sum($intervals) / count($intervals), 1);
+
+        return [$averageInterval, count($intervals)];
     }
 
     private function calculateAvailableMinutes(Barber $barber, Carbon $start, Carbon $end): int

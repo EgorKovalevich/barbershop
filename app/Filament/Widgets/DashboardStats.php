@@ -678,8 +678,8 @@ class DashboardStats extends Widget
                 'hover' => 'hover:border-danger-200',
             ],
             default => [
-                'badge' => 'bg-primary-100 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400',
-                'chip' => 'bg-primary-50 text-primary-500 dark:bg-primary-500/10 dark:text-primary-300',
+                'badge' => 'text-primary-600 dark:text-primary-400',
+                'chip' => 'text-primary-500 dark:text-primary-300',
                 'hover' => 'hover:border-primary-200',
             ],
         };

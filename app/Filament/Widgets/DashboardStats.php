@@ -52,13 +52,15 @@ class DashboardStats extends Widget
         $financeCurrent = $metricsService->financials($start, $end);
         $financePrevious = $metricsService->financials($previousStart, $previousEnd);
         $siteActivity = $metricsService->siteActivity($start, $end);
+        $technical = $metricsService->technical($start, $end, $siteActivity);
 
         $groups = collect([
             $this->buildBookingGroup($bookingCurrent, $bookingPrevious),
             $this->buildClientGroup($clientCurrent, $clientPrevious),
             $this->buildBarberGroup($barberMetrics),
             $this->buildFinanceGroup($financeCurrent, $financePrevious),
-            $this->buildSiteActivityGroup($siteActivity),
+            $this->buildSiteActivityGroup($siteActivity, $technical),
+            $this->buildTechnicalGroup($technical),
         ])->map(function (array $group) {
             $group['styles'] = $this->accentStyles($group['accent']);
 
@@ -312,61 +314,194 @@ class DashboardStats extends Widget
         ];
     }
 
-    private function buildSiteActivityGroup(array $metrics): array
+    private function buildSiteActivityGroup(array $metrics, array $technical): array
     {
         $visitorsValue = sprintf('%s уник. / %s всего',
             number_format($metrics['unique_visitors'], 0, ',', ' '),
             number_format($metrics['total_visitors'], 0, ',', ' ')
         );
 
-        $conversionHelper = $metrics['per_hundred'] > 0
-            ? sprintf('%d записей из 100 посетителей', $metrics['per_hundred'])
-            : 'Нет данных о конверсии';
-
         $popularDays = $this->formatPopularList($metrics['popular_days']);
         $popularHours = $this->formatPopularList($metrics['popular_hours']);
+
+        $trafficMetrics = [
+            [
+                'label' => 'Количество сессий',
+                'value' => number_format($technical['sessions'], 0, ',', ' '),
+                'icon' => 'heroicon-o-chart-bar',
+                'helper' => sprintf('Записей через сайт: %s', number_format($metrics['bookings_total'], 0, ',', ' ')),
+            ],
+            [
+                'label' => 'Уникальные пользователи',
+                'value' => number_format($technical['unique_users'], 0, ',', ' '),
+                'icon' => 'heroicon-o-user-circle',
+                'helper' => sprintf('Конверсия в запись: %.1f%%', $metrics['conversion_rate']),
+            ],
+            [
+                'label' => 'Среднее время на сайте',
+                'value' => $this->formatDuration($technical['average_session_duration']),
+                'icon' => 'heroicon-o-clock',
+                'helper' => 'минуты:секунды',
+            ],
+            [
+                'label' => 'Популярные дни',
+                'value' => $popularDays,
+                'icon' => 'heroicon-o-calendar',
+                'helper' => $popularDays !== 'Нет данных'
+                    ? 'Лучшие дни для акций и рекламы'
+                    : 'Нет активных записей',
+            ],
+            [
+                'label' => 'Часы пик',
+                'value' => $popularHours,
+                'icon' => 'heroicon-o-clock',
+                'helper' => $popularHours !== 'Нет данных'
+                    ? 'Интервалы наибольшего спроса онлайн'
+                    : 'Недостаточно данных',
+            ],
+        ];
+
+        $popularPagesMetrics = collect($technical['popular_pages'] ?? [])
+            ->map(function (array $page) {
+                $percentage = $page['percentage'] ?? 0.0;
+
+                return [
+                    'label' => $page['title'] ?? 'Страница',
+                    'value' => number_format($page['views'] ?? 0, 0, ',', ' '),
+                    'icon' => 'heroicon-o-document-text',
+                    'helper' => isset($page['path']) && $page['path'] !== null
+                        ? sprintf('%s · %.1f%% трафика', $page['path'], $percentage)
+                        : sprintf('%.1f%% трафика', $percentage),
+                ];
+            })
+            ->all();
+
+        if ($popularPagesMetrics === []) {
+            $popularPagesMetrics[] = [
+                'label' => 'Недостаточно данных',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'Подключите счётчики аналитики, чтобы увидеть популярные страницы',
+            ];
+        }
+
+        $deviceMetrics = collect($technical['devices'] ?? [])
+            ->map(function (array $device) {
+                return [
+                    'label' => $device['label'] ?? 'Устройство',
+                    'value' => sprintf('%.1f%%', $device['percentage'] ?? 0),
+                    'icon' => 'heroicon-o-device-phone-mobile',
+                    'helper' => number_format($device['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
+                ];
+            })
+            ->all();
+
+        if ($deviceMetrics === []) {
+            $deviceMetrics[] = [
+                'label' => 'Нет данных по устройствам',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'Сессии ещё не зафиксированы',
+            ];
+        }
+
+        $geoMetrics = collect($technical['locations'] ?? [])
+            ->map(function (array $location) {
+                return [
+                    'label' => $location['label'] ?? 'Регион',
+                    'value' => sprintf('%.1f%%', $location['percentage'] ?? 0),
+                    'icon' => 'heroicon-o-map-pin',
+                    'helper' => number_format($location['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
+                ];
+            })
+            ->all();
+
+        if ($geoMetrics === []) {
+            $geoMetrics[] = [
+                'label' => 'Нет геоданных',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'География будет доступна после накопления данных',
+            ];
+        }
 
         return [
             'title' => '5. Сайт и онлайн-активность',
             'description' => 'Показывает вовлечённость посетителей и эффективность онлайн-записей.',
             'icon' => 'heroicon-o-globe-alt',
             'accent' => 'primary',
+            'sections' => [
+                [
+                    'title' => 'Трафик и поведение',
+                    'description' => 'Общие показатели вовлечённости посетителей сайта.',
+                    'metrics' => $trafficMetrics,
+                ],
+                [
+                    'title' => 'Популярные страницы',
+                    'description' => 'Страницы, на которых пользователи проводят больше всего времени.',
+                    'metrics' => $popularPagesMetrics,
+                ],
+                [
+                    'title' => 'Устройства',
+                    'description' => 'Распределение сессий по типам устройств.',
+                    'metrics' => $deviceMetrics,
+                ],
+                [
+                    'title' => 'География посетителей',
+                    'description' => 'Города и регионы с наибольшей активностью.',
+                    'metrics' => $geoMetrics,
+                ],
+            ],
+        ];
+    }
+
+    private function buildTechnicalGroup(array $technical): array
+    {
+        $errorRate = $technical['error_rate'] ?? 0.0;
+        $errorBudget = $technical['error_budget'] ?? 0.0;
+
+        return [
+            'title' => '6. Технические метрики',
+            'description' => 'Отслеживание стабильности, производительности и качества пользовательского опыта.',
+            'icon' => 'heroicon-o-cog-8-tooth',
+            'accent' => 'warning',
             'metrics' => [
                 [
-                    'label' => 'Посетители сайта',
-                    'value' => $visitorsValue,
-                    'icon' => 'heroicon-o-eye',
-                    'helper' => 'уникальные / все визиты за период',
+                    'label' => 'Аптайм сервиса',
+                    'value' => sprintf('%.2f%%', $technical['uptime'] ?? 0.0),
+                    'icon' => 'heroicon-o-signal',
+                    'helper' => 'Доступность по данным мониторинга',
                 ],
                 [
-                    'label' => 'Конверсия в запись',
-                    'value' => sprintf('%.1f%%', $metrics['conversion_rate']),
-                    'icon' => 'heroicon-o-trending-up',
-                    'helper' => $conversionHelper,
+                    'label' => 'Среднее время ответа',
+                    'value' => number_format($technical['avg_response_time'] ?? 0, 0, ',', ' ') . ' мс',
+                    'icon' => 'heroicon-o-bolt',
+                    'helper' => 'Показатель на уровне сервера приложений',
                 ],
                 [
-                    'label' => 'Записи через сайт',
-                    'value' => number_format($metrics['bookings_total'], 0, ',', ' '),
-                    'icon' => 'heroicon-o-clipboard-list',
-                    'helper' => $metrics['bookings_completed'] > 0
-                        ? sprintf('Завершено: %d', $metrics['bookings_completed'])
-                        : 'Записи пока не завершены',
+                    'label' => 'Скорость загрузки страниц',
+                    'value' => sprintf('%.1f с', $technical['avg_page_speed'] ?? 0.0),
+                    'icon' => 'heroicon-o-sparkles',
+                    'helper' => 'Среднее время до интерактивности',
                 ],
                 [
-                    'label' => 'Популярные дни',
-                    'value' => $popularDays,
-                    'icon' => 'heroicon-o-calendar',
-                    'helper' => $popularDays !== 'Нет данных'
-                        ? 'Лучшие дни для акций и рекламы'
-                        : 'Нет активных записей',
+                    'label' => 'Показатель отказов',
+                    'value' => sprintf('%.1f%%', $technical['bounce_rate'] ?? 0.0),
+                    'icon' => 'heroicon-o-arrow-trending-down',
+                    'helper' => 'Доля посетителей, покинувших сайт без действий',
                 ],
                 [
-                    'label' => 'Часы пик',
-                    'value' => $popularHours,
-                    'icon' => 'heroicon-o-clock',
-                    'helper' => $popularHours !== 'Нет данных'
-                        ? 'Интервалы наибольшего спроса онлайн'
-                        : 'Недостаточно данных',
+                    'label' => 'Ошибки 5xx',
+                    'value' => sprintf('%.2f%%', $errorRate),
+                    'icon' => 'heroicon-o-exclamation-triangle',
+                    'status_color' => $errorRate > $errorBudget ? 'danger' : 'success',
+                    'helper' => sprintf('Допустимо не более %.2f%%', $errorBudget),
+                ],
+                [
+                    'label' => 'Запас error budget',
+                    'value' => sprintf('%.2f%%', max($errorBudget - $errorRate, 0)),
+                    'icon' => 'heroicon-o-shield-check',
+                    'helper' => 'Разница между целевым и фактическим уровнем ошибок',
                 ],
             ],
         ];
@@ -399,6 +534,18 @@ class DashboardStats extends Widget
             ->implode(' · ');
 
         return $formatted !== '' ? $formatted : 'Нет данных';
+    }
+
+    private function formatDuration(int $seconds): string
+    {
+        if ($seconds <= 0) {
+            return '—';
+        }
+
+        $minutes = intdiv($seconds, 60);
+        $remaining = $seconds % 60;
+
+        return sprintf('%d:%02d', $minutes, $remaining);
     }
 
     private function formatCurrency(float $amount, int $precision = 0): string

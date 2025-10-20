@@ -493,7 +493,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Ошибки 5xx',
                     'value' => sprintf('%.2f%%', $errorRate),
-                    'icon' => 'heroicon-o-exclamation-triangle',
+                    'icon' => 'heroicon-o-exclamation-circle',
                     'status_color' => $errorRate > $errorBudget ? 'danger' : 'success',
                     'helper' => sprintf('Допустимо не более %.2f%%', $errorBudget),
                 ],

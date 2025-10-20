@@ -290,6 +290,7 @@ class AdminDashboardStatsService
     {
         return $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
+            ->whereIn('status', Event::blockingStatuses())
             ->count();
     }
 
@@ -319,6 +320,7 @@ class AdminDashboardStatsService
     {
         $events = $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
+            ->where('status', Event::STATUS_COMPLETED)
             ->whereNotNull('organizer_id')
             ->get(['organizer_id']);
 
@@ -422,6 +424,7 @@ class AdminDashboardStatsService
         return $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
             ->whereNotNull('barber_id')
+            ->whereIn('status', Event::blockingStatuses())
             ->get(['barber_id', 'start', 'end', 'status', 'category'])
             ->groupBy('barber_id')
             ->map(fn (Collection $events) => $events->values());
@@ -429,11 +432,13 @@ class AdminDashboardStatsService
 
     private function calculateAverageCheckForEvents(Collection $events, Collection $categories): ?float
     {
-        if ($events->isEmpty()) {
+        $completedEvents = $events->filter(fn (Event $event) => $event->status === Event::STATUS_COMPLETED);
+
+        if ($completedEvents->isEmpty()) {
             return null;
         }
 
-        $amounts = $events->map(function (Event $event) use ($categories) {
+        $amounts = $completedEvents->map(function (Event $event) use ($categories) {
             return $this->resolveEventAmount($event, $categories);
         })->filter(fn (?float $value) => $value !== null);
 
@@ -531,6 +536,7 @@ class AdminDashboardStatsService
 
         $events = $this->baseEventQuery()
             ->whereBetween('start', [$monthStart, $monthEnd])
+            ->where('status', Event::STATUS_COMPLETED)
             ->whereNotNull('category')
             ->get(['category']);
 
@@ -596,7 +602,7 @@ class AdminDashboardStatsService
         $query = $this->basePaymentQuery();
 
         if ($start && $end) {
-            $query->whereBetween(DB::raw('COALESCE(payment_date, DATE(created_at))'), [$start->toDateString(), $end->toDateString()]);
+            $query->whereBetween(DB::raw('COALESCE(payment_date, DATE(payments.created_at))'), [$start->toDateString(), $end->toDateString()]);
         }
 
         $categoryTable = config('timex.tables.category.name', 'timex_categories');

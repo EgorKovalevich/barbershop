@@ -12,19 +12,22 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $key => $label)
+                        @php
+                            $buttonClasses = \Illuminate\Support\Arr::toCssClasses([
+                                'transition focus-visible:ring-2 focus-visible:ring-offset-2',
+                                'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-gray-900' => $currentFilter === $key,
+                                'ring-0' => $currentFilter !== $key,
+                            ]);
+                        @endphp
                         <x-filament::button
                             type="button"
                             size="sm"
                             :color="$currentFilter === $key ? 'primary' : 'gray'"
-                            :class="[
-                                'transition focus-visible:ring-2 focus-visible:ring-offset-2',
-                                $currentFilter === $key
-                                    ? 'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-gray-900'
-                                    : 'ring-0'
-                            ]"
-                            wire:click="setFilter('{{ $key }}')"
+                            class="{{ $buttonClasses }}"
+                            wire:click="setFilter({{ \Illuminate\Support\Js::from($key) }})"
                             wire:loading.attr="disabled"
                             wire:target="setFilter"
+                            wire:key="dashboard-filter-{{ $key }}"
                         >
                             <span wire:loading.remove wire:target="setFilter">{{ $label }}</span>
                             <svg

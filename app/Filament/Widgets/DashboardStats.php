@@ -51,12 +51,14 @@ class DashboardStats extends Widget
         $barberMetrics = $metricsService->barberServices($start, $end);
         $financeCurrent = $metricsService->financials($start, $end);
         $financePrevious = $metricsService->financials($previousStart, $previousEnd);
+        $siteActivity = $metricsService->siteActivity($start, $end);
 
         $groups = collect([
             $this->buildBookingGroup($bookingCurrent, $bookingPrevious),
             $this->buildClientGroup($clientCurrent, $clientPrevious),
             $this->buildBarberGroup($barberMetrics),
             $this->buildFinanceGroup($financeCurrent, $financePrevious),
+            $this->buildSiteActivityGroup($siteActivity),
         ])->map(function (array $group) {
             $group['styles'] = $this->accentStyles($group['accent']);
 
@@ -193,7 +195,7 @@ class DashboardStats extends Widget
         return [
             'title' => '3. Барберы и услуги',
             'description' => 'Эффективность мастеров и популярность услуг.',
-            'icon' => 'heroicon-o-briefcase',
+            'icon' => 'heroicon-o-scissors',
             'accent' => 'warning',
             'metrics' => [
                 [
@@ -310,12 +312,93 @@ class DashboardStats extends Widget
         ];
     }
 
+    private function buildSiteActivityGroup(array $metrics): array
+    {
+        $visitorsValue = sprintf('%s уник. / %s всего',
+            number_format($metrics['unique_visitors'], 0, ',', ' '),
+            number_format($metrics['total_visitors'], 0, ',', ' ')
+        );
+
+        $conversionHelper = $metrics['per_hundred'] > 0
+            ? sprintf('%d записей из 100 посетителей', $metrics['per_hundred'])
+            : 'Нет данных о конверсии';
+
+        $popularDays = $this->formatPopularList($metrics['popular_days']);
+        $popularHours = $this->formatPopularList($metrics['popular_hours']);
+
+        return [
+            'title' => '5. Сайт и онлайн-активность',
+            'description' => 'Показывает вовлечённость посетителей и эффективность онлайн-записей.',
+            'icon' => 'heroicon-o-globe-alt',
+            'accent' => 'primary',
+            'metrics' => [
+                [
+                    'label' => 'Посетители сайта',
+                    'value' => $visitorsValue,
+                    'icon' => 'heroicon-o-eye',
+                    'helper' => 'уникальные / все визиты за период',
+                ],
+                [
+                    'label' => 'Конверсия в запись',
+                    'value' => sprintf('%.1f%%', $metrics['conversion_rate']),
+                    'icon' => 'heroicon-o-trending-up',
+                    'helper' => $conversionHelper,
+                ],
+                [
+                    'label' => 'Записи через сайт',
+                    'value' => number_format($metrics['bookings_total'], 0, ',', ' '),
+                    'icon' => 'heroicon-o-clipboard-list',
+                    'helper' => $metrics['bookings_completed'] > 0
+                        ? sprintf('Завершено: %d', $metrics['bookings_completed'])
+                        : 'Записи пока не завершены',
+                ],
+                [
+                    'label' => 'Популярные дни',
+                    'value' => $popularDays,
+                    'icon' => 'heroicon-o-calendar',
+                    'helper' => $popularDays !== 'Нет данных'
+                        ? 'Лучшие дни для акций и рекламы'
+                        : 'Нет активных записей',
+                ],
+                [
+                    'label' => 'Часы пик',
+                    'value' => $popularHours,
+                    'icon' => 'heroicon-o-clock',
+                    'helper' => $popularHours !== 'Нет данных'
+                        ? 'Интервалы наибольшего спроса онлайн'
+                        : 'Недостаточно данных',
+                ],
+            ],
+        ];
+    }
+
     private function formatChangeData(int|float $current, int|float $previous, bool $invert = false): array
     {
         $change = $this->formatChange($current, $previous, $invert);
         $change['class'] = $this->colorClass($change['color']);
 
         return $change;
+    }
+
+    private function formatPopularList(array $items): string
+    {
+        if ($items === []) {
+            return 'Нет данных';
+        }
+
+        $formatted = collect($items)
+            ->map(function (array $item) {
+                $label = $item['label'] ?? '';
+                $count = $item['count'] ?? null;
+
+                return $count !== null
+                    ? sprintf('%s — %s', $label, number_format($count, 0, ',', ' '))
+                    : $label;
+            })
+            ->filter()
+            ->implode(' · ');
+
+        return $formatted !== '' ? $formatted : 'Нет данных';
     }
 
     private function formatCurrency(float $amount, int $precision = 0): string

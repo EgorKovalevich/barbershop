@@ -27,8 +27,8 @@
                             wire:target="setFilter('{{$key}}')"
                         >
                             <span wire:loading.remove wire:target="setFilter('{{$key}}')">{{ $label }}</span>
-                            <x-filament::loading-indicator
-                                class="h-4 w-4"
+                            <x-heroicon-o-arrow-path
+                                class="h-4 w-4 animate-spin"
                                 wire:loading
                                 wire:target="setFilter('{{$key}}')"
                             />

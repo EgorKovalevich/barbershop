@@ -1,3 +1,7 @@
+@pushOnce('styles')
+    <link rel="stylesheet" href="{{ asset('css/filament-dashboard.css') }}">
+@endPushOnce
+
 <x-filament::widget class="filament-dashboard-stats">
     <x-filament::card>
         <div class="flex flex-col gap-6">
@@ -23,13 +27,13 @@
                             type="button"
                             size="sm"
                             :color="$currentFilter === $key ? 'primary' : 'gray'"
-                            class="{{ $buttonClasses }}"
+                            class="{{ $buttonClasses }} dashboard-period-button"
                             wire:click="setFilter({{ \Illuminate\Support\Js::from($key) }})"
                             wire:loading.attr="disabled"
                             wire:target="setFilter"
                             wire:key="dashboard-filter-{{ $key }}"
                         >
-                            <span wire:loading.remove wire:target="setFilter">{{ $label }}</span>
+                            <span class="dashboard-period-button__label" wire:loading.remove wire:target="setFilter">{{ $label }}</span>
                         </x-filament::button>
                     @endforeach
                 </div>

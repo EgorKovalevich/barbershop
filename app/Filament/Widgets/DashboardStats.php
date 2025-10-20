@@ -361,6 +361,10 @@ class DashboardStats extends Widget
             ],
         ];
 
+        $popularPagesMetrics = $this->preparePopularPagesMetrics($technical);
+        $deviceMetrics = $this->prepareDeviceMetrics($technical);
+        $geoMetrics = $this->prepareGeoMetrics($technical);
+
         return [
             'title' => '5. Сайт и онлайн-активность',
             'description' => 'Показывает вовлечённость посетителей и эффективность онлайн-записей.',
@@ -371,6 +375,21 @@ class DashboardStats extends Widget
                     'title' => 'Трафик и поведение',
                     'description' => 'Общие показатели вовлечённости посетителей сайта.',
                     'metrics' => $trafficMetrics,
+                ],
+                [
+                    'title' => 'Популярные страницы',
+                    'description' => 'Страницы, на которых пользователи проводят больше всего времени.',
+                    'metrics' => $popularPagesMetrics,
+                ],
+                [
+                    'title' => 'Устройства',
+                    'description' => 'Распределение сессий по типам устройств.',
+                    'metrics' => $deviceMetrics,
+                ],
+                [
+                    'title' => 'География посетителей',
+                    'description' => 'Города и регионы с наибольшей активностью.',
+                    'metrics' => $geoMetrics,
                 ],
             ],
         ];

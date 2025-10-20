@@ -390,7 +390,7 @@ class DashboardStats extends Widget
                 return [
                     'label' => $device['label'] ?? 'Устройство',
                     'value' => sprintf('%.1f%%', $device['percentage'] ?? 0),
-                    'icon' => 'heroicon-o-device-phone-mobile',
+                    'icon' => 'heroicon-o-device-mobile',
                     'helper' => number_format($device['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
                 ];
             })
@@ -410,7 +410,7 @@ class DashboardStats extends Widget
                 return [
                     'label' => $location['label'] ?? 'Регион',
                     'value' => sprintf('%.1f%%', $location['percentage'] ?? 0),
-                    'icon' => 'heroicon-o-map-pin',
+                    'icon' => 'heroicon-o-location-marker',
                     'helper' => number_format($location['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
                 ];
             })
@@ -463,19 +463,19 @@ class DashboardStats extends Widget
         return [
             'title' => '6. Технические метрики',
             'description' => 'Отслеживание стабильности, производительности и качества пользовательского опыта.',
-            'icon' => 'heroicon-o-cog-8-tooth',
+            'icon' => 'heroicon-o-cog',
             'accent' => 'warning',
             'metrics' => [
                 [
                     'label' => 'Аптайм сервиса',
                     'value' => sprintf('%.2f%%', $technical['uptime'] ?? 0.0),
-                    'icon' => 'heroicon-o-signal',
+                    'icon' => 'heroicon-o-check-circle',
                     'helper' => 'Доступность по данным мониторинга',
                 ],
                 [
                     'label' => 'Среднее время ответа',
                     'value' => number_format($technical['avg_response_time'] ?? 0, 0, ',', ' ') . ' мс',
-                    'icon' => 'heroicon-o-bolt',
+                    'icon' => 'heroicon-o-lightning-bolt',
                     'helper' => 'Показатель на уровне сервера приложений',
                 ],
                 [
@@ -487,7 +487,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Показатель отказов',
                     'value' => sprintf('%.1f%%', $technical['bounce_rate'] ?? 0.0),
-                    'icon' => 'heroicon-o-arrow-trending-down',
+                    'icon' => 'heroicon-o-trending-down',
                     'helper' => 'Доля посетителей, покинувших сайт без действий',
                 ],
                 [

@@ -66,7 +66,7 @@ return [
     */
 
     'home_url' => '/',
-    'locale' => 'ru','locale' => 'ru',
+    'locale' => 'ru',
 
     /*
     |--------------------------------------------------------------------------
@@ -145,7 +145,6 @@ return [
         'path' => app_path('Filament/Widgets'),
         'register' => [
             Widgets\AccountWidget::class,
-            Widgets\FilamentInfoWidget::class,
 //            SocialNetworksWidget::class,
 //            PaymentsChart::class,
 //            EventsChart::class,

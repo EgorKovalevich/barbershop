@@ -12,12 +12,46 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $key => $label)
+                        @php
+                            $isActive = $currentFilter === $key;
+
+                            $labelText = '';
+
+                            if (is_array($label)) {
+                                $labelText = $label['label'] ?? null;
+
+                                if (! is_string($labelText) && ! is_numeric($labelText)) {
+                                    $labelText = \Illuminate\Support\Arr::first(
+                                        $label,
+                                        fn ($value) => is_string($value) || is_numeric($value)
+                                    );
+                                }
+                            } elseif (is_string($label) || is_numeric($label)) {
+                                $labelText = $label;
+                            }
+
+                            if ($labelText === null || $labelText === '') {
+                                $labelText = is_scalar($key) ? (string) $key : '';
+                            }
+
+                            $labelText = (string) $labelText;
+                        @endphp
+
                         <x-filament::button
+                            type="button"
                             size="sm"
-                            :color="$currentFilter === $key ? 'primary' : 'gray'"
-                            wire:click="$set('filter', '{$key}')"
+                            :color="$isActive ? 'primary' : 'gray'"
+                            :outlined="! $isActive"
+                            :icon="$isActive ? 'heroicon-o-check-circle' : null"
+                            wire:click="$set('filter', '{{ $key }}')"
+                            wire:loading.attr="disabled"
+                            :class="[
+                                'transition-colors duration-150',
+                                'shadow-sm hover:shadow' => ! $isActive,
+                                'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-gray-900' => $isActive,
+                            ]"
                         >
-                            {{ $label }}
+                            {{ $labelText }}
                         </x-filament::button>
                     @endforeach
                 </div>

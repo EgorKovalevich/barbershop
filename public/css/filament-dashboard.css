@@ -1,14 +1,22 @@
 .filament-dashboard-stats .dashboard-period-button {
-    min-width: 6.25rem;
+    box-sizing: border-box;
+    width: 6.75rem;
+    flex: 0 0 6.75rem;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     text-align: center;
     white-space: nowrap;
 }
 
-.filament-dashboard-stats .dashboard-period-button .dashboard-period-button__label {
+.filament-dashboard-stats .dashboard-period-button .dashboard-period-button__label,
+.filament-dashboard-stats .dashboard-period-button .filament-button-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 100%;
+}
+
+.filament-dashboard-stats .dashboard-period-button[disabled] {
+    opacity: 1;
 }

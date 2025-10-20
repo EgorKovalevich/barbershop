@@ -2,6 +2,8 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Widgets\Concerns\FormatsMetricChange;
+use App\Filament\Widgets\Concerns\HasPeriodFilters;
 use App\Models\Event;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -11,6 +13,9 @@ use Flowframe\Trend\TrendValue;
 
 class BookingStats extends StatsOverviewWidget
 {
+    use HasPeriodFilters;
+    use FormatsMetricChange;
+
     protected static ?string $pollingInterval = '60s';
 
     protected function getCards(): array
@@ -59,51 +64,7 @@ class BookingStats extends StatsOverviewWidget
                     : 'Нет записей за период')
                 ->descriptionColor($metrics['cancellation_rate'] > 15 ? 'danger' : 'success')
                 ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make('Повторные записи', sprintf('%s клиентов', number_format($metrics['returning_clients'])))
-                ->description(sprintf('%.1f%% от записей', $metrics['retention_rate']))
-                ->descriptionColor($metrics['retention_rate'] >= 30 ? 'success' : 'primary')
-                ->extraAttributes(['class' => 'min-h-[164px]']),
         ];
-    }
-
-    protected function getFilters(): ?array
-    {
-        return [
-            'day' => 'Сегодня',
-            'week' => 'Неделя',
-            'month' => 'Месяц',
-        ];
-    }
-
-    protected function getDefaultFilter(): ?string
-    {
-        return 'week';
-    }
-
-    private function resolvePeriods(?string $filter): array
-    {
-        $now = Carbon::now();
-
-        return match ($filter) {
-            'day' => [
-                $now->copy()->startOfDay(),
-                $now->copy()->endOfDay(),
-                $now->copy()->subDay()->startOfDay(),
-                $now->copy()->subDay()->endOfDay(),
-            ],
-            'month' => [
-                $now->copy()->startOfMonth(),
-                $now->copy()->endOfMonth(),
-                $now->copy()->subMonth()->startOfMonth(),
-                $now->copy()->subMonth()->endOfMonth(),
-            ],
-            default => [
-                $now->copy()->startOfWeek(),
-                $now->copy()->endOfWeek(),
-                $now->copy()->subWeek()->startOfWeek(),
-                $now->copy()->subWeek()->endOfWeek(),
-            ],
-        };
     }
 
     private function collectMetrics(Carbon $start, Carbon $end): array
@@ -125,27 +86,6 @@ class BookingStats extends StatsOverviewWidget
         $cancellationsTotal = $cancelled + $noShow;
         $cancellationRate = $totalBookings > 0 ? round(($cancellationsTotal / $totalBookings) * 100, 1) : 0.0;
 
-        $previousVisitors = Event::query()
-            ->whereNotNull('organizer_id')
-            ->where('start', '<', $start)
-            ->distinct()
-            ->pluck('organizer_id');
-
-        $returningClients = Event::query()
-            ->whereBetween('start', [$start, $end])
-            ->whereNotNull('organizer_id')
-            ->whereIn('organizer_id', $previousVisitors)
-            ->distinct()
-            ->count('organizer_id');
-
-        $returningBookings = Event::query()
-            ->whereBetween('start', [$start, $end])
-            ->whereNotNull('organizer_id')
-            ->whereIn('organizer_id', $previousVisitors)
-            ->count();
-
-        $retentionRate = $totalBookings > 0 ? round(($returningBookings / $totalBookings) * 100, 1) : 0.0;
-
         return [
             'total_bookings' => $totalBookings,
             'completed' => $completed,
@@ -155,8 +95,6 @@ class BookingStats extends StatsOverviewWidget
             'no_show' => $noShow,
             'cancellations_total' => $cancellationsTotal,
             'cancellation_rate' => $cancellationRate,
-            'returning_clients' => $returningClients,
-            'retention_rate' => $retentionRate,
         ];
     }
 
@@ -173,49 +111,5 @@ class BookingStats extends StatsOverviewWidget
         $trend = $trendBuilder->count();
 
         return $trend->map(fn (TrendValue $value): int => (int) $value->aggregate)->toArray();
-    }
-
-    private function formatChange(int $current, int $previous, bool $invert = false): array
-    {
-        if ($previous === 0) {
-            if ($current === 0) {
-                return [
-                    'description' => 'Без изменений',
-                    'icon' => 'heroicon-o-minus',
-                    'color' => 'secondary',
-                ];
-            }
-
-            return [
-                'description' => 'Рост на 100%',
-                'icon' => 'heroicon-o-trending-up',
-                'color' => $invert ? 'danger' : 'success',
-            ];
-        }
-
-        $change = (($current - $previous) / $previous) * 100;
-        $rounded = round(abs($change), 1);
-
-        if (abs($change) < 0.05) {
-            return [
-                'description' => 'Без изменений',
-                'icon' => 'heroicon-o-minus',
-                'color' => 'secondary',
-            ];
-        }
-
-        if ($change > 0) {
-            return [
-                'description' => 'Рост на ' . $rounded . '%',
-                'icon' => 'heroicon-o-trending-up',
-                'color' => $invert ? 'danger' : 'success',
-            ];
-        }
-
-        return [
-            'description' => 'Спад на ' . $rounded . '%',
-            'icon' => 'heroicon-o-trending-down',
-            'color' => $invert ? 'success' : 'danger',
-        ];
     }
 }

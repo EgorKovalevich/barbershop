@@ -201,21 +201,10 @@
                             </form>
 
                             <div class="profile-actions-group">
-                                <a href="{{ route('appointments.index') }}" class="profile-submit profile-submit--secondary">Отменить</a>
+                                <a href="{{ route('appointments.index') }}" class="profile-submit profile-submit--secondary">Обратно</a>
                                 <button type="submit" form="appointment-update-form" class="profile-submit">Сохранить изменения</button>
                             </div>
                         </div>
-                    </section>
-
-                    <section class="profile-card profile-card--activity">
-                        <h2 class="profile-card-title">Советы по изменению записи</h2>
-                        <p class="profile-card-subtitle">Проверьте расписание барбера и выбирайте время, свободное от других визитов.</p>
-
-                        <ul class="profile-tips-list">
-                            <li>Если нужное время занято, попробуйте выбрать другого барбера.</li>
-                            <li>Избегайте выбора прошедших дат — система их не примет.</li>
-                            <li>Сообщите мастеру о пожеланиях в комментарии.</li>
-                        </ul>
                     </section>
                 </div>
             </div>

@@ -1778,7 +1778,7 @@ nav{
 }
 
 .profile-column--forms {
-    grid-column: span 5;
+    grid-column: span 7;
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
@@ -2033,7 +2033,7 @@ nav{
     border-radius: 14px;
     padding: 12px 16px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: #91969d;
     outline: none;
     transition: border-color .2s ease, box-shadow .2s ease;
 }

@@ -345,7 +345,7 @@ class DashboardStats extends Widget
                         $resolvedKey = Str::slug((string) ($value['label'] ?? $value['name'] ?? $value['title'] ?? 'filter-' . $key));
                     }
 
-                    $label = $this->stringifyFilterLabel($value['label'] ?? $value['name'] ?? $value['title'] ?? null, $resolvedKey);
+                    $label = $value['label'] ?? $value['name'] ?? $value['title'] ?? (string) $resolvedKey;
 
                     return [
                         'key' => (string) $resolvedKey,
@@ -354,7 +354,7 @@ class DashboardStats extends Widget
                 }
 
                 $resolvedKey = is_string($key) ? $key : (string) $key;
-                $label = $this->stringifyFilterLabel($value, $resolvedKey);
+                $label = is_scalar($value) ? (string) $value : (string) $resolvedKey;
 
                 return [
                     'key' => (string) $resolvedKey,
@@ -364,30 +364,5 @@ class DashboardStats extends Widget
             ->unique('key')
             ->values()
             ->all();
-    }
-
-    private function stringifyFilterLabel(mixed $label, string|int|null $fallback): string
-    {
-        if ($label === null) {
-            return (string) $fallback;
-        }
-
-        if (is_string($label) || $label instanceof \Stringable) {
-            return (string) $label;
-        }
-
-        if (is_scalar($label)) {
-            return (string) $label;
-        }
-
-        if (is_array($label)) {
-            return collect($label)
-                ->map(fn ($item) => is_scalar($item) ? (string) $item : null)
-                ->filter()
-                ->implode(' ')
-                ?: (string) $fallback;
-        }
-
-        return (string) $fallback;
     }
 }

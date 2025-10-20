@@ -280,7 +280,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Выручка по неделям',
                     'value' => $this->formatCurrency($weekly['total']),
-                    'icon' => 'heroicon-o-calendar-days',
+                    'icon' => 'heroicon-o-calendar',
                     'helper' => $this->formatRevenueHelper($weekly),
                 ],
                 [
@@ -292,7 +292,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Средний чек',
                     'value' => $this->formatCurrency($current['average_check'], 2),
-                    'icon' => 'heroicon-o-receipt-percent',
+                    'icon' => 'heroicon-o-receipt-tax',
                     'change' => $averageCheckChange,
                     'helper' => $current['completed_visits'] > 0
                         ? sprintf('На основе %d визитов', $current['completed_visits'])

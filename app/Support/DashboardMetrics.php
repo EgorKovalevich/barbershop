@@ -427,10 +427,6 @@ class DashboardMetrics
             ? (int) round(($totalBookings / $estimatedVisitors) * 100)
             : 0;
 
-        $visitorsPerBooking = $totalBookings > 0
-            ? round($estimatedVisitors / $totalBookings, 1)
-            : null;
-
         return [
             'total_visitors' => $estimatedVisitors,
             'unique_visitors' => $uniqueVisitors,
@@ -438,7 +434,6 @@ class DashboardMetrics
             'per_hundred' => $perHundred,
             'bookings_total' => $totalBookings,
             'bookings_completed' => $completedBookings,
-            'visitors_per_booking' => $visitorsPerBooking,
             'popular_days' => $this->resolvePopularDays($events),
             'popular_hours' => $this->resolvePopularHours($events),
         ];

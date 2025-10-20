@@ -353,16 +353,6 @@ class DashboardStats extends Widget
                         : 'Записи пока не завершены',
                 ],
                 [
-                    'label' => 'Посетителей на одну запись',
-                    'value' => $metrics['visitors_per_booking'] !== null
-                        ? number_format($metrics['visitors_per_booking'], 1, ',', ' ')
-                        : '—',
-                    'icon' => 'heroicon-o-scale',
-                    'helper' => $metrics['visitors_per_booking'] !== null
-                        ? 'Среднее количество визитов до записи'
-                        : 'Недостаточно данных для расчёта',
-                ],
-                [
                     'label' => 'Популярные дни',
                     'value' => $popularDays,
                     'icon' => 'heroicon-o-calendar',

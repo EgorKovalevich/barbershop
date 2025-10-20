@@ -12,10 +12,21 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $key => $label)
+                        @php($isActive = $currentFilter === $key)
+
                         <x-filament::button
+                            type="button"
                             size="sm"
-                            :color="$currentFilter === $key ? 'primary' : 'gray'"
+                            :color="$isActive ? 'primary' : 'gray'"
+                            :outlined="! $isActive"
+                            :icon="$isActive ? 'heroicon-o-check-circle' : null"
                             wire:click="$set('filter', '{$key}')"
+                            wire:loading.attr="disabled"
+                            :class="[
+                                'transition-colors duration-150',
+                                'shadow-sm hover:shadow' => ! $isActive,
+                                'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-gray-900' => $isActive,
+                            ]"
                         >
                             {{ $label }}
                         </x-filament::button>

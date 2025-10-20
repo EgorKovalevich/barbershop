@@ -110,7 +110,7 @@
                         <h2 class="profile-card-title">Обновление записи</h2>
                         <p class="profile-card-subtitle">Выберите новые параметры визита и сохраните изменения.</p>
 
-                        <form method="POST" action="{{ route('appointments.update', $appointment) }}" class="profile-form">
+                        <form id="appointment-update-form" method="POST" action="{{ route('appointments.update', $appointment) }}" class="profile-form">
                             @csrf
                             @method('PUT')
 
@@ -190,18 +190,18 @@
                                 @enderror
                             </div>
 
-                            <div class="profile-form-actions">
-                                <a href="{{ route('appointments.index') }}" class="profile-submit profile-submit--secondary">Отменить</a>
-                                <button type="submit" class="profile-submit">Сохранить изменения</button>
-                            </div>
                         </form>
 
-                        <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="profile-form-danger" onsubmit="return confirm('Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.');">
-                            @csrf
-                            @method('DELETE')
+                        <div class="profile-actions">
+                            <a href="{{ route('appointments.index') }}" class="profile-submit profile-submit--secondary">Отменить</a>
+                            <button type="submit" form="appointment-update-form" class="profile-submit">Сохранить изменения</button>
+                            <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="profile-actions-delete" onsubmit="return confirm('Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.');">
+                                @csrf
+                                @method('DELETE')
 
-                            <button type="submit" class="profile-submit profile-submit--danger">Удалить запись</button>
-                        </form>
+                                <button type="submit" class="profile-submit profile-submit--danger">Удалить запись</button>
+                            </form>
+                        </div>
                     </section>
 
                     <section class="profile-card profile-card--activity">

@@ -485,9 +485,7 @@ class DashboardStats extends Widget
                     'label' => $page['title'] ?? 'Страница',
                     'value' => number_format($page['views'] ?? 0, 0, ',', ' '),
                     'icon' => 'heroicon-o-document-text',
-                    'helper' => isset($page['path']) && $page['path'] !== null
-                        ? sprintf('%s · %.1f%% трафика', $page['path'], $percentage)
-                        : sprintf('%.1f%% трафика', $percentage),
+                    'helper' => sprintf('%.1f%% трафика', $percentage),
                 ];
             })
             ->all();

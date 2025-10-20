@@ -15,6 +15,7 @@ class ClientStats extends StatsOverviewWidget
     use FormatsMetricChange;
 
     protected static ?string $pollingInterval = '60s';
+    protected static ?string $heading = '2. Клиенты';
 
     protected function getCards(): array
     {

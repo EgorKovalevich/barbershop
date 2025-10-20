@@ -259,7 +259,7 @@ class DashboardStats extends Widget
         return [
             'title' => '4. Финансовая статистика',
             'description' => 'Для контроля доходности и выявления точек роста.',
-            'icon' => 'heroicon-o-banknotes',
+            'icon' => 'heroicon-o-cash',
             'accent' => 'danger',
             'metrics' => [
                 [

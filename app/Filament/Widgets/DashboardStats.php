@@ -303,7 +303,7 @@ class DashboardStats extends Widget
                     'value' => $barbers['leader']
                         ? sprintf('%s — %s', $barbers['leader']['name'], $this->formatCurrency($barbers['leader']['amount']))
                         : 'Нет данных',
-                    'icon' => 'heroicon-o-adjustments-horizontal',
+                    'icon' => 'heroicon-o-adjustments',
                     'helper' => $this->formatBarberComparisonHelper($barbers),
                 ],
             ],

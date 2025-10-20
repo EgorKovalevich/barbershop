@@ -22,14 +22,14 @@
                                     ? 'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-gray-900'
                                     : 'ring-0'
                             ]"
-                            wire:click="setFilter('{{$key}}')"
+                            wire:click="setFilter('{{ $key }}')"
                             wire:loading.attr="disabled"
-                            wire:target="setFilter('{{$key}}')"
+                            wire:target="setFilter"
                         >
-                            <span wire:loading.remove wire:target="setFilter('{{$key}}')">{{ $label }}</span>
+                            <span wire:loading.remove wire:target="setFilter">{{ $label }}</span>
                             <svg
                                 wire:loading
-                                wire:target="setFilter('{{$key}}')"
+                                wire:target="setFilter"
                                 class="h-4 w-4 animate-spin text-current"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"

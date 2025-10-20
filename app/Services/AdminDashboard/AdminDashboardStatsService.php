@@ -9,7 +9,6 @@ use App\Models\Payment;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -286,7 +285,7 @@ class AdminDashboardStatsService
         return Payment::query()->where('paid', true);
     }
 
-    private function countEventsBetween(CarbonInterface $start, CarbonInterface $end): int
+    private function countEventsBetween(Carbon $start, Carbon $end): int
     {
         return $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
@@ -315,7 +314,7 @@ class AdminDashboardStatsService
         ];
     }
 
-    private function calculateRetention(CarbonInterface $start, CarbonInterface $end): array
+    private function calculateRetention(Carbon $start, Carbon $end): array
     {
         $events = $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
@@ -417,7 +416,7 @@ class AdminDashboardStatsService
             ->all();
     }
 
-    private function eventsGroupedByBarber(CarbonInterface $start, CarbonInterface $end): Collection
+    private function eventsGroupedByBarber(Carbon $start, Carbon $end): Collection
     {
         return $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])
@@ -468,7 +467,7 @@ class AdminDashboardStatsService
         return $amounts->get($index);
     }
 
-    private function calculateUtilization(?Barber $barberProfile, Collection $events, CarbonInterface $periodStart, CarbonInterface $periodEnd): ?float
+    private function calculateUtilization(?Barber $barberProfile, Collection $events, Carbon $periodStart, Carbon $periodEnd): ?float
     {
         if (! $barberProfile) {
             return null;
@@ -591,7 +590,7 @@ class AdminDashboardStatsService
         return (int) round($minutes->average());
     }
 
-    private function sumPaymentsBetween(?CarbonInterface $start, ?CarbonInterface $end): float
+    private function sumPaymentsBetween(?Carbon $start, ?Carbon $end): float
     {
         $query = $this->basePaymentQuery();
 
@@ -608,7 +607,7 @@ class AdminDashboardStatsService
         return (float) $total;
     }
 
-    private function calculateRevenueByBarber(Collection $categories, CarbonInterface $start, CarbonInterface $end): array
+    private function calculateRevenueByBarber(Collection $categories, Carbon $start, Carbon $end): array
     {
         $events = $this->baseEventQuery()
             ->whereBetween('start', [$start, $end])

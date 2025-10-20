@@ -383,6 +383,67 @@ class DashboardMetrics
         ];
     }
 
+    /**
+     * Estimate website activity metrics for the given period.
+     */
+    public function siteActivity(Carbon $start, Carbon $end): array
+    {
+        $events = Event::query()
+            ->whereBetween('start', [$start, $end])
+            ->whereIn('status', Event::blockingStatuses())
+            ->get(['start', 'status', 'organizer_id']);
+
+        $totalBookings = $events->count();
+        $completedBookings = $events->where('status', Event::STATUS_COMPLETED)->count();
+        $uniqueBookers = $events
+            ->whereNotNull('organizer_id')
+            ->unique('organizer_id')
+            ->count();
+
+        $periodDays = max($start->diffInDays($end) + 1, 1);
+
+        $targetConversion = (float) config('dashboard.site_activity.target_conversion', 12.0);
+        $averageDailyVisitors = (int) config('dashboard.site_activity.average_daily_visitors', 160);
+        $uniqueShare = (float) config('dashboard.site_activity.unique_share', 0.72);
+
+        if ($totalBookings > 0 && $targetConversion > 0) {
+            $estimatedVisitors = (int) max(
+                $totalBookings,
+                round($totalBookings / ($targetConversion / 100))
+            );
+        } else {
+            $estimatedVisitors = (int) round($periodDays * max($averageDailyVisitors, 0));
+        }
+
+        $uniqueVisitors = $estimatedVisitors > 0
+            ? (int) max($uniqueBookers, round($estimatedVisitors * $uniqueShare))
+            : $uniqueBookers;
+
+        $conversionRate = $estimatedVisitors > 0
+            ? round(($totalBookings / $estimatedVisitors) * 100, 1)
+            : 0.0;
+
+        $perHundred = $estimatedVisitors > 0
+            ? (int) round(($totalBookings / $estimatedVisitors) * 100)
+            : 0;
+
+        $visitorsPerBooking = $totalBookings > 0
+            ? round($estimatedVisitors / $totalBookings, 1)
+            : null;
+
+        return [
+            'total_visitors' => $estimatedVisitors,
+            'unique_visitors' => $uniqueVisitors,
+            'conversion_rate' => $conversionRate,
+            'per_hundred' => $perHundred,
+            'bookings_total' => $totalBookings,
+            'bookings_completed' => $completedBookings,
+            'visitors_per_booking' => $visitorsPerBooking,
+            'popular_days' => $this->resolvePopularDays($events),
+            'popular_hours' => $this->resolvePopularHours($events),
+        ];
+    }
+
     private function calculateAverageVisitInterval($eventsQuery): array
     {
         $intervals = [];
@@ -571,5 +632,71 @@ class DashboardMetrics
             'monthly' => $date->copy()->startOfMonth()->format('m.Y'),
             default => $date->toDateString(),
         };
+    }
+
+    private function resolvePopularDays($events): array
+    {
+        if ($events->isEmpty()) {
+            return [];
+        }
+
+        $dayNames = [
+            1 => ['short' => 'Пн', 'full' => 'Понедельник'],
+            2 => ['short' => 'Вт', 'full' => 'Вторник'],
+            3 => ['short' => 'Ср', 'full' => 'Среда'],
+            4 => ['short' => 'Чт', 'full' => 'Четверг'],
+            5 => ['short' => 'Пт', 'full' => 'Пятница'],
+            6 => ['short' => 'Сб', 'full' => 'Суббота'],
+            7 => ['short' => 'Вс', 'full' => 'Воскресенье'],
+        ];
+
+        return $events
+            ->filter(fn (Event $event) => $event->start !== null)
+            ->groupBy(fn (Event $event) => $event->start->dayOfWeekIso)
+            ->map(function ($group, $day) use ($dayNames) {
+                $info = $dayNames[$day] ?? ['short' => (string) $day, 'full' => ''];
+
+                return [
+                    'label' => $info['short'],
+                    'full' => $info['full'],
+                    'count' => $group->count(),
+                ];
+            })
+            ->sortByDesc('count')
+            ->take(3)
+            ->values()
+            ->map(function (array $item) {
+                return [
+                    'label' => $item['label'],
+                    'count' => $item['count'],
+                    'description' => $item['full'],
+                ];
+            })
+            ->all();
+    }
+
+    private function resolvePopularHours($events): array
+    {
+        if ($events->isEmpty()) {
+            return [];
+        }
+
+        return $events
+            ->filter(fn (Event $event) => $event->start !== null)
+            ->groupBy(fn (Event $event) => $event->start->format('H'))
+            ->map(function ($group, $hour) {
+                $hourInt = (int) $hour;
+                $startLabel = str_pad((string) $hourInt, 2, '0', STR_PAD_LEFT) . ':00';
+                $endLabel = str_pad((string) (($hourInt + 1) % 24), 2, '0', STR_PAD_LEFT) . ':00';
+
+                return [
+                    'label' => $startLabel . '–' . $endLabel,
+                    'count' => $group->count(),
+                ];
+            })
+            ->sortByDesc('count')
+            ->take(3)
+            ->values()
+            ->all();
     }
 }

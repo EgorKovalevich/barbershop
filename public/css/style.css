@@ -2111,7 +2111,6 @@ nav{
     padding-top: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
-    justify-content: flex-end;
     gap: 12px;
     flex-wrap: wrap;
     align-items: center;
@@ -2120,6 +2119,14 @@ nav{
 .profile-actions form {
     display: flex;
     margin: 0;
+}
+
+.profile-actions-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 
 .profile-actions .profile-submit {

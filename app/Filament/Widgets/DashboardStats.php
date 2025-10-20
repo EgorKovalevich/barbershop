@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Filament\Widgets\Concerns\FormatsMetricChange;
 use App\Filament\Widgets\Concerns\HasPeriodFilters;
 use App\Support\DashboardMetrics;
+use Illuminate\Support\Str;
 use Filament\Widgets\Widget;
 
 class DashboardStats extends Widget
@@ -16,6 +17,33 @@ class DashboardStats extends Widget
     protected static string $view = 'filament.widgets.dashboard-stats';
 
     public ?string $filter = null;
+
+    public function mountDashboardStats(): void
+    {
+        $filters = $this->normalizedFilters();
+        $default = $this->resolveDefaultFilterKey($filters);
+
+        if ($this->filter !== null && $this->filterIsAvailable($this->filter, $filters)) {
+            return;
+        }
+
+        $this->filter = $default;
+    }
+
+    public function setFilter(string $filter): void
+    {
+        $filters = $this->normalizedFilters();
+
+        if (! $this->filterIsAvailable($filter, $filters)) {
+            return;
+        }
+
+        if ($this->filter === $filter) {
+            return;
+        }
+
+        $this->filter = $filter;
+    }
 
     protected function getViewData(): array
     {
@@ -42,10 +70,15 @@ class DashboardStats extends Widget
             return $group;
         })->all();
 
+        $filters = $this->normalizedFilters();
+        $filterKey = $this->filterIsAvailable($filter, $filters)
+            ? $filter
+            : $this->resolveDefaultFilterKey($filters);
+
         return [
             'groups' => $groups,
-            'filters' => $this->getFilters(),
-            'currentFilter' => $filter,
+            'filters' => $filters,
+            'currentFilter' => $filterKey,
         ];
     }
 
@@ -263,5 +296,73 @@ class DashboardStats extends Widget
                 'hover' => 'hover:border-primary-200',
             ],
         };
+    }
+
+    /**
+     * @param  array<int, array{key: string, label: string}>  $filters
+     */
+    private function resolveDefaultFilterKey(array $filters): ?string
+    {
+        $default = $this->getDefaultFilter();
+        $keys = collect($filters)->pluck('key')->all();
+
+        if ($default !== null && in_array($default, $keys, true)) {
+            return $default;
+        }
+
+        return $filters[0]['key'] ?? null;
+    }
+
+    /**
+     * @param  array<int, array{key: string, label: string}>  $filters
+     */
+    private function filterIsAvailable(?string $filter, array $filters): bool
+    {
+        if ($filter === null) {
+            return false;
+        }
+
+        return collect($filters)
+            ->pluck('key')
+            ->contains(fn (string $available) => $available === $filter);
+    }
+
+    /**
+     * @return array<int, array{key: string, label: string}>
+     */
+    private function normalizedFilters(): array
+    {
+        $filters = $this->getFilters() ?? [];
+
+        return collect($filters)
+            ->map(function ($value, $key) {
+                if (is_array($value)) {
+                    $resolvedKey = is_string($key)
+                        ? $key
+                        : ($value['key'] ?? $value['value'] ?? $value['id'] ?? null);
+
+                    if ($resolvedKey === null) {
+                        $resolvedKey = Str::slug((string) ($value['label'] ?? $value['name'] ?? $value['title'] ?? 'filter-' . $key));
+                    }
+
+                    $label = $value['label'] ?? $value['name'] ?? $value['title'] ?? (string) $resolvedKey;
+
+                    return [
+                        'key' => (string) $resolvedKey,
+                        'label' => $label,
+                    ];
+                }
+
+                $resolvedKey = is_string($key) ? $key : (string) $key;
+                $label = is_scalar($value) ? (string) $value : (string) $resolvedKey;
+
+                return [
+                    'key' => (string) $resolvedKey,
+                    'label' => $label,
+                ];
+            })
+            ->unique('key')
+            ->values()
+            ->all();
     }
 }

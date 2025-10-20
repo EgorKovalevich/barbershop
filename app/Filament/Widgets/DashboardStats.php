@@ -361,70 +361,6 @@ class DashboardStats extends Widget
             ],
         ];
 
-        $popularPagesMetrics = collect($technical['popular_pages'] ?? [])
-            ->map(function (array $page) {
-                $percentage = $page['percentage'] ?? 0.0;
-
-                return [
-                    'label' => $page['title'] ?? 'Страница',
-                    'value' => number_format($page['views'] ?? 0, 0, ',', ' '),
-                    'icon' => 'heroicon-o-document-text',
-                    'helper' => isset($page['path']) && $page['path'] !== null
-                        ? sprintf('%s · %.1f%% трафика', $page['path'], $percentage)
-                        : sprintf('%.1f%% трафика', $percentage),
-                ];
-            })
-            ->all();
-
-        if ($popularPagesMetrics === []) {
-            $popularPagesMetrics[] = [
-                'label' => 'Недостаточно данных',
-                'value' => '—',
-                'icon' => 'heroicon-o-information-circle',
-                'helper' => 'Подключите счётчики аналитики, чтобы увидеть популярные страницы',
-            ];
-        }
-
-        $deviceMetrics = collect($technical['devices'] ?? [])
-            ->map(function (array $device) {
-                return [
-                    'label' => $device['label'] ?? 'Устройство',
-                    'value' => sprintf('%.1f%%', $device['percentage'] ?? 0),
-                    'icon' => 'heroicon-o-device-mobile',
-                    'helper' => number_format($device['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
-                ];
-            })
-            ->all();
-
-        if ($deviceMetrics === []) {
-            $deviceMetrics[] = [
-                'label' => 'Нет данных по устройствам',
-                'value' => '—',
-                'icon' => 'heroicon-o-information-circle',
-                'helper' => 'Сессии ещё не зафиксированы',
-            ];
-        }
-
-        $geoMetrics = collect($technical['locations'] ?? [])
-            ->map(function (array $location) {
-                return [
-                    'label' => $location['label'] ?? 'Регион',
-                    'value' => sprintf('%.1f%%', $location['percentage'] ?? 0),
-                    'icon' => 'heroicon-o-location-marker',
-                    'helper' => number_format($location['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
-                ];
-            })
-            ->all();
-
-        if ($geoMetrics === []) {
-            $geoMetrics[] = [
-                'label' => 'Нет геоданных',
-                'value' => '—',
-                'icon' => 'heroicon-o-information-circle',
-                'helper' => 'География будет доступна после накопления данных',
-            ];
-        }
-
         return [
             'title' => '5. Сайт и онлайн-активность',
             'description' => 'Показывает вовлечённость посетителей и эффективность онлайн-записей.',
@@ -435,6 +371,71 @@ class DashboardStats extends Widget
                     'title' => 'Трафик и поведение',
                     'description' => 'Общие показатели вовлечённости посетителей сайта.',
                     'metrics' => $trafficMetrics,
+                ],
+            ],
+        ];
+    }
+
+    private function buildTechnicalGroup(array $technical): array
+    {
+        $errorRate = $technical['error_rate'] ?? 0.0;
+        $errorBudget = $technical['error_budget'] ?? 0.0;
+
+        $technicalMetrics = [
+            [
+                'label' => 'Аптайм сервиса',
+                'value' => sprintf('%.2f%%', $technical['uptime'] ?? 0.0),
+                'icon' => 'heroicon-o-check-circle',
+                'helper' => 'Доступность по данным мониторинга',
+            ],
+            [
+                'label' => 'Среднее время ответа',
+                'value' => number_format($technical['avg_response_time'] ?? 0, 0, ',', ' ') . ' мс',
+                'icon' => 'heroicon-o-lightning-bolt',
+                'helper' => 'Показатель на уровне сервера приложений',
+            ],
+            [
+                'label' => 'Скорость загрузки страниц',
+                'value' => sprintf('%.1f с', $technical['avg_page_speed'] ?? 0.0),
+                'icon' => 'heroicon-o-sparkles',
+                'helper' => 'Среднее время до интерактивности',
+            ],
+            [
+                'label' => 'Показатель отказов',
+                'value' => sprintf('%.1f%%', $technical['bounce_rate'] ?? 0.0),
+                'icon' => 'heroicon-o-trending-down',
+                'helper' => 'Доля посетителей, покинувших сайт без действий',
+            ],
+            [
+                'label' => 'Ошибки 5xx',
+                'value' => sprintf('%.2f%%', $errorRate),
+                'icon' => 'heroicon-o-exclamation-circle',
+                'status_color' => $errorRate > $errorBudget ? 'danger' : 'success',
+                'helper' => sprintf('Допустимо не более %.2f%%', $errorBudget),
+            ],
+            [
+                'label' => 'Запас error budget',
+                'value' => sprintf('%.2f%%', max($errorBudget - $errorRate, 0)),
+                'icon' => 'heroicon-o-shield-check',
+                'helper' => 'Разница между целевым и фактическим уровнем ошибок',
+            ],
+        ];
+
+        $popularPagesMetrics = $this->preparePopularPagesMetrics($technical);
+        $deviceMetrics = $this->prepareDeviceMetrics($technical);
+        $geoMetrics = $this->prepareGeoMetrics($technical);
+
+        return [
+            'title' => '6. Технические метрики',
+            'description' => 'Отслеживание стабильности, производительности и качества пользовательского опыта.',
+            'icon' => 'heroicon-o-cog',
+            'accent' => 'warning',
+            'metrics' => [],
+            'sections' => [
+                [
+                    'title' => 'Стабильность и производительность',
+                    'description' => 'Ключевые показатели доступности и скорости работы сервисов.',
+                    'metrics' => $technicalMetrics,
                 ],
                 [
                     'title' => 'Популярные страницы',
@@ -455,56 +456,81 @@ class DashboardStats extends Widget
         ];
     }
 
-    private function buildTechnicalGroup(array $technical): array
+    private function preparePopularPagesMetrics(array $technical): array
     {
-        $errorRate = $technical['error_rate'] ?? 0.0;
-        $errorBudget = $technical['error_budget'] ?? 0.0;
+        $popularPagesMetrics = collect($technical['popular_pages'] ?? [])
+            ->map(function (array $page) {
+                $percentage = $page['percentage'] ?? 0.0;
 
-        return [
-            'title' => '6. Технические метрики',
-            'description' => 'Отслеживание стабильности, производительности и качества пользовательского опыта.',
-            'icon' => 'heroicon-o-cog',
-            'accent' => 'warning',
-            'metrics' => [
-                [
-                    'label' => 'Аптайм сервиса',
-                    'value' => sprintf('%.2f%%', $technical['uptime'] ?? 0.0),
-                    'icon' => 'heroicon-o-check-circle',
-                    'helper' => 'Доступность по данным мониторинга',
-                ],
-                [
-                    'label' => 'Среднее время ответа',
-                    'value' => number_format($technical['avg_response_time'] ?? 0, 0, ',', ' ') . ' мс',
-                    'icon' => 'heroicon-o-lightning-bolt',
-                    'helper' => 'Показатель на уровне сервера приложений',
-                ],
-                [
-                    'label' => 'Скорость загрузки страниц',
-                    'value' => sprintf('%.1f с', $technical['avg_page_speed'] ?? 0.0),
-                    'icon' => 'heroicon-o-sparkles',
-                    'helper' => 'Среднее время до интерактивности',
-                ],
-                [
-                    'label' => 'Показатель отказов',
-                    'value' => sprintf('%.1f%%', $technical['bounce_rate'] ?? 0.0),
-                    'icon' => 'heroicon-o-trending-down',
-                    'helper' => 'Доля посетителей, покинувших сайт без действий',
-                ],
-                [
-                    'label' => 'Ошибки 5xx',
-                    'value' => sprintf('%.2f%%', $errorRate),
-                    'icon' => 'heroicon-o-exclamation-circle',
-                    'status_color' => $errorRate > $errorBudget ? 'danger' : 'success',
-                    'helper' => sprintf('Допустимо не более %.2f%%', $errorBudget),
-                ],
-                [
-                    'label' => 'Запас error budget',
-                    'value' => sprintf('%.2f%%', max($errorBudget - $errorRate, 0)),
-                    'icon' => 'heroicon-o-shield-check',
-                    'helper' => 'Разница между целевым и фактическим уровнем ошибок',
-                ],
-            ],
-        ];
+                return [
+                    'label' => $page['title'] ?? 'Страница',
+                    'value' => number_format($page['views'] ?? 0, 0, ',', ' '),
+                    'icon' => 'heroicon-o-document-text',
+                    'helper' => sprintf('%.1f%% трафика', $percentage),
+                ];
+            })
+            ->all();
+
+        if ($popularPagesMetrics === []) {
+            $popularPagesMetrics[] = [
+                'label' => 'Недостаточно данных',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'Подключите счётчики аналитики, чтобы увидеть популярные страницы',
+            ];
+        }
+
+        return $popularPagesMetrics;
+    }
+
+    private function prepareDeviceMetrics(array $technical): array
+    {
+        $deviceMetrics = collect($technical['devices'] ?? [])
+            ->map(function (array $device) {
+                return [
+                    'label' => $device['label'] ?? 'Устройство',
+                    'value' => sprintf('%.1f%%', $device['percentage'] ?? 0),
+                    'icon' => 'heroicon-o-device-mobile',
+                    'helper' => number_format($device['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
+                ];
+            })
+            ->all();
+
+        if ($deviceMetrics === []) {
+            $deviceMetrics[] = [
+                'label' => 'Нет данных по устройствам',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'Сессии ещё не зафиксированы',
+            ];
+        }
+
+        return $deviceMetrics;
+    }
+
+    private function prepareGeoMetrics(array $technical): array
+    {
+        $geoMetrics = collect($technical['locations'] ?? [])
+            ->map(function (array $location) {
+                return [
+                    'label' => $location['label'] ?? 'Регион',
+                    'value' => sprintf('%.1f%%', $location['percentage'] ?? 0),
+                    'icon' => 'heroicon-o-location-marker',
+                    'helper' => number_format($location['sessions'] ?? 0, 0, ',', ' ') . ' сессий',
+                ];
+            })
+            ->all();
+
+        if ($geoMetrics === []) {
+            $geoMetrics[] = [
+                'label' => 'Нет геоданных',
+                'value' => '—',
+                'icon' => 'heroicon-o-information-circle',
+                'helper' => 'География будет доступна после накопления данных',
+            ];
+        }
+
+        return $geoMetrics;
     }
 
     private function formatChangeData(int|float $current, int|float $previous, bool $invert = false): array

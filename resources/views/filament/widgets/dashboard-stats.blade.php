@@ -59,49 +59,43 @@
                         </div>
                     </div>
 
-                    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        @foreach ($group['metrics'] as $metric)
-                            <div class="relative overflow-hidden rounded-xl border border-gray-200/70 bg-white/90 p-4 shadow-sm transition duration-150 {{ $group['styles']['hover'] }} hover:shadow-md dark:border-gray-700/70 dark:bg-gray-900/70">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                            {{ $metric['label'] }}
-                                        </p>
-                                        <p class="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">
-                                            {{ $metric['value'] }}
-                                        </p>
-                                    </div>
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $group['styles']['chip'] }}">
-                                        @php($icon = $metric['icon'] ?? $group['icon'])
-                                        @if ($icon)
-                                            <x-dynamic-component :component="$icon" class="h-5 w-5" />
+                    @if (! empty($group['sections']))
+                        <div class="mt-6 space-y-6">
+                            @foreach ($group['sections'] as $section)
+                                <div class="flex flex-col gap-3">
+                                    <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                                        <h4 class="text-base font-semibold text-gray-900 dark:text-white">
+                                            {{ $section['title'] }}
+                                        </h4>
+                                        @if (! empty($section['description']))
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                {{ $section['description'] }}
+                                            </p>
                                         @endif
+                                    </div>
+                                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                        @foreach ($section['metrics'] as $metric)
+                                            @include('filament.widgets.partials.metric-card', [
+                                                'metric' => $metric,
+                                                'styles' => $group['styles'],
+                                                'defaultIcon' => $group['icon'],
+                                            ])
+                                        @endforeach
                                     </div>
                                 </div>
-
-                                @if (! empty($metric['change']))
-                                    <div class="mt-4 flex items-center gap-2 text-sm {{ $metric['change']['class'] }}">
-                                        @if (! empty($metric['change']['icon']))
-                                            <x-dynamic-component :component="$metric['change']['icon']" class="h-4 w-4" />
-                                        @endif
-                                        <span>{{ $metric['change']['description'] }}</span>
-                                    </div>
-                                @endif
-
-                                @if (! empty($metric['status_color']))
-                                    <div class="mt-4 text-sm font-medium {{ $metric['status_color'] === 'danger' ? 'text-danger-600 dark:text-danger-400' : 'text-success-600 dark:text-success-400' }}">
-                                        {{ $metric['status_color'] === 'danger' ? 'Перегрузка' : 'Рабочая нагрузка в норме' }}
-                                    </div>
-                                @endif
-
-                                @if (! empty($metric['helper']))
-                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $metric['helper'] }}
-                                    </p>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            @foreach ($group['metrics'] as $metric)
+                                @include('filament.widgets.partials.metric-card', [
+                                    'metric' => $metric,
+                                    'styles' => $group['styles'],
+                                    'defaultIcon' => $group['icon'],
+                                ])
+                            @endforeach
+                        </div>
+                    @endif
                 </x-filament::card>
             @endforeach
         </div>

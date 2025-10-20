@@ -17,6 +17,8 @@
     <script src="{{ asset('js/slick.min.js') }}"></script>
     <script src="{{ asset('js/main_script.js') }}"></script>
     <script src="{{ asset('js/ajax_request.js') }}"></script>
+
+    @include('includes.analytics')
 </head>
 
 <body>

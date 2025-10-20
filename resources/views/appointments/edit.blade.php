@@ -195,6 +195,13 @@
                                 <button type="submit" class="profile-submit">Сохранить изменения</button>
                             </div>
                         </form>
+
+                        <form method="POST" action="{{ route('appointments.destroy', $appointment) }}" class="profile-form-danger" onsubmit="return confirm('Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.');">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit" class="profile-submit profile-submit--danger">Удалить запись</button>
+                        </form>
                     </section>
 
                     <section class="profile-card profile-card--activity">

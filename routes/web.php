@@ -30,4 +30,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/appointments', [AppointmentsController::class, 'index'])->name('appointments.index');
     Route::get('/appointments/{appointment}/edit', [AppointmentsController::class, 'edit'])->name('appointments.edit');
     Route::put('/appointments/{appointment}', [AppointmentsController::class, 'update'])->name('appointments.update');
+    Route::delete('/appointments/{appointment}', [AppointmentsController::class, 'destroy'])->name('appointments.destroy');
 });

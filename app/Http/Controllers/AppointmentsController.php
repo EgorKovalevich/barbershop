@@ -136,4 +136,19 @@ class AppointmentsController extends Controller
             ->route('appointments.index')
             ->with('appointmentUpdated', 'Запись успешно обновлена.');
     }
+
+    public function destroy(Request $request, Event $appointment): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! $user || $user->role !== 'client' || $appointment->organizer_id !== $user->id) {
+            abort(403);
+        }
+
+        $appointment->delete();
+
+        return redirect()
+            ->route('appointments.index')
+            ->with('appointmentDeleted', 'Запись успешно удалена.');
+    }
 }

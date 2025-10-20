@@ -2015,12 +2015,6 @@ nav{
     gap: 18px;
 }
 
-.profile-form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
 .profile-form-group {
     display: flex;
     flex-direction: column;
@@ -2102,6 +2096,34 @@ nav{
 
 .profile-submit--secondary:hover {
     box-shadow: 0 18px 35px rgba(59, 130, 246, 0.45);
+}
+
+.profile-submit--danger {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.95), rgba(220, 38, 38, 0.95));
+}
+
+.profile-submit--danger:hover {
+    box-shadow: 0 18px 35px rgba(248, 113, 113, 0.45);
+}
+
+.profile-actions {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.profile-actions form {
+    display: flex;
+    margin: 0;
+}
+
+.profile-actions .profile-submit {
+    align-self: center;
 }
 
 @media (min-width: 1200px) {

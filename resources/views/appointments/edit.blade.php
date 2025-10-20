@@ -64,6 +64,47 @@
             @endif
 
             <div class="profile-content">
+                <div class="profile-column profile-column--details">
+                    <section class="profile-card profile-card--details">
+                        <h2 class="profile-card-title">Текущая запись</h2>
+                        <p class="profile-card-subtitle">Проверьте параметры визита перед сохранением изменений.</p>
+
+                        @php
+                            $categoryName = optional($categories->firstWhere('id', $appointment->category))->name;
+                            $statusLabel = \App\Models\Event::statusOptions()[$appointment->status] ?? 'Без статуса';
+                        @endphp
+
+                        <article class="profile-appointment">
+                            <div class="profile-appointment-header">
+                                <div>
+                                    <span class="profile-appointment-date">{{ optional($appointment->start)->translatedFormat('d F Y') }}</span>
+                                    <span class="profile-appointment-time">{{ optional($appointment->start)->format('H:i') }} – {{ optional($appointment->end)->format('H:i') }}</span>
+                                </div>
+                                <span class="profile-appointment-status">{{ $statusLabel }}</span>
+                            </div>
+
+                            <dl class="profile-appointment-details">
+                                <div class="profile-appointment-detail">
+                                    <dt>Барбер</dt>
+                                    <dd>{{ $barberName ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Услуга</dt>
+                                    <dd>{{ $categoryName ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Контактный телефон</dt>
+                                    <dd>{{ $appointment->number ?? '—' }}</dd>
+                                </div>
+                                <div class="profile-appointment-detail">
+                                    <dt>Комментарий</dt>
+                                    <dd>{{ $appointment->body ?? '—' }}</dd>
+                                </div>
+                            </dl>
+                        </article>
+                    </section>
+                </div>
+
                 <div class="profile-column profile-column--forms">
                     <section class="profile-card profile-card--form">
                         <h2 class="profile-card-title">Обновление записи</h2>
@@ -155,9 +196,7 @@
                             </div>
                         </form>
                     </section>
-                </div>
 
-                <div class="profile-column profile-column--details">
                     <section class="profile-card profile-card--activity">
                         <h2 class="profile-card-title">Советы по изменению записи</h2>
                         <p class="profile-card-subtitle">Проверьте расписание барбера и выбирайте время, свободное от других визитов.</p>

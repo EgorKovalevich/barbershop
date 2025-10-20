@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\BarberServiceStats;
 use App\Filament\Widgets\BookingStats;
 use App\Filament\Widgets\ClientStats;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -14,6 +15,7 @@ class Dashboard extends BaseDashboard
         return [
             BookingStats::class,
             ClientStats::class,
+            BarberServiceStats::class,
             Widgets\AccountWidget::class,
             Widgets\FilamentInfoWidget::class,
         ];

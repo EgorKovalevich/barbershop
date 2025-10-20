@@ -17,6 +17,7 @@ class BookingStats extends StatsOverviewWidget
     use FormatsMetricChange;
 
     protected static ?string $pollingInterval = '60s';
+    protected static ?string $heading = '1. Записи';
 
     protected function getCards(): array
     {

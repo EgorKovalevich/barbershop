@@ -12,13 +12,24 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $filterOption)
-                        @php($isActive = $currentFilter === $filterOption['key'])
+                        @php
+                            $label = $filterOption['label'];
+                            $label = is_array($label)
+                                ? collect($label)
+                                    ->map(fn ($item) => is_scalar($item) ? (string) $item : null)
+                                    ->filter()
+                                    ->implode(' ')
+                                : (string) $label;
+
+                            $filterKey = $filterOption['key'];
+                            $isActive = $currentFilter === $filterKey;
+                        @endphp
 
                         <x-filament::button
                             size="sm"
                             :color="$isActive ? 'primary' : 'gray'"
                             :outlined="! $isActive"
-                            wire:click="setFilter('{{ $filterOption['key'] }}')"
+                            wire:click="setFilter('{{ $filterKey }}')"
                             wire:loading.attr="disabled"
                             wire:target="setFilter"
                             :class="[
@@ -28,7 +39,7 @@
                                     : 'opacity-80 hover:opacity-100 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600',
                             ]"
                         >
-                            {{ $filterOption['label'] }}
+                            {{ $label }}
                         </x-filament::button>
                     @endforeach
                 </div>

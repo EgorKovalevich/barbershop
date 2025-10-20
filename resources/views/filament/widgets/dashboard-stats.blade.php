@@ -12,18 +12,7 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $filterOption)
-                        @php
-                            $label = $filterOption['label'];
-                            $label = is_array($label)
-                                ? collect($label)
-                                    ->map(fn ($item) => is_scalar($item) ? (string) $item : null)
-                                    ->filter()
-                                    ->implode(' ')
-                                : (string) $label;
-
-                            $filterKey = $filterOption['key'];
-                            $isActive = $currentFilter === $filterKey;
-                        @endphp
+                        @php($isActive = $currentFilter === $filterOption['key'])
 
                         @php
                             $label = $filterOption['label'];
@@ -39,7 +28,7 @@
                             size="sm"
                             :color="$isActive ? 'primary' : 'gray'"
                             :outlined="! $isActive"
-                            wire:click="setFilter('{{ $filterKey }}')"
+                            wire:click="setFilter('{{ $filterOption['key'] }}')"
                             wire:loading.attr="disabled"
                             wire:target="setFilter"
                             :class="[

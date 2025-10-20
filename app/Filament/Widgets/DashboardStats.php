@@ -49,11 +49,14 @@ class DashboardStats extends Widget
         $clientPrevious = $metricsService->clients($previousStart, $previousEnd);
 
         $barberMetrics = $metricsService->barberServices($start, $end);
+        $financeCurrent = $metricsService->financials($start, $end);
+        $financePrevious = $metricsService->financials($previousStart, $previousEnd);
 
         $groups = collect([
             $this->buildBookingGroup($bookingCurrent, $bookingPrevious),
             $this->buildClientGroup($clientCurrent, $clientPrevious),
             $this->buildBarberGroup($barberMetrics),
+            $this->buildFinanceGroup($financeCurrent, $financePrevious),
         ])->map(function (array $group) {
             $group['styles'] = $this->accentStyles($group['accent']);
 
@@ -243,12 +246,131 @@ class DashboardStats extends Widget
         ];
     }
 
+    private function buildFinanceGroup(array $current, array $previous): array
+    {
+        $revenueChange = $this->formatChangeData($current['total_revenue'], $previous['total_revenue']);
+        $averageCheckChange = $this->formatChangeData($current['average_check'], $previous['average_check']);
+
+        $daily = $current['breakdowns']['daily'];
+        $weekly = $current['breakdowns']['weekly'];
+        $monthly = $current['breakdowns']['monthly'];
+        $barbers = $current['barbers'];
+
+        return [
+            'title' => '4. Финансовая статистика',
+            'description' => 'Для контроля доходности и выявления точек роста.',
+            'icon' => 'heroicon-o-cash',
+            'accent' => 'danger',
+            'metrics' => [
+                [
+                    'label' => 'Выручка за период',
+                    'value' => $this->formatCurrency($current['total_revenue']),
+                    'icon' => 'heroicon-o-chart-bar',
+                    'change' => $revenueChange,
+                    'helper' => $current['completed_visits'] > 0
+                        ? sprintf('Завершено визитов: %d', $current['completed_visits'])
+                        : 'Нет завершённых визитов',
+                ],
+                [
+                    'label' => 'Выручка по дням',
+                    'value' => $this->formatCurrency($daily['total']),
+                    'icon' => 'heroicon-o-sun',
+                    'helper' => $this->formatRevenueHelper($daily),
+                ],
+                [
+                    'label' => 'Выручка по неделям',
+                    'value' => $this->formatCurrency($weekly['total']),
+                    'icon' => 'heroicon-o-calendar',
+                    'helper' => $this->formatRevenueHelper($weekly),
+                ],
+                [
+                    'label' => 'Выручка по месяцам',
+                    'value' => $this->formatCurrency($monthly['total']),
+                    'icon' => 'heroicon-o-chart-pie',
+                    'helper' => $this->formatRevenueHelper($monthly),
+                ],
+                [
+                    'label' => 'Средний чек',
+                    'value' => $this->formatCurrency($current['average_check'], 2),
+                    'icon' => 'heroicon-o-receipt-tax',
+                    'change' => $averageCheckChange,
+                    'helper' => $current['completed_visits'] > 0
+                        ? sprintf('На основе %d визитов', $current['completed_visits'])
+                        : 'Нет данных для расчёта',
+                ],
+                [
+                    'label' => 'Сравнение выручки по барберам',
+                    'value' => $barbers['leader']
+                        ? sprintf('%s — %s', $barbers['leader']['name'], $this->formatCurrency($barbers['leader']['amount']))
+                        : 'Нет данных',
+                    'icon' => 'heroicon-o-adjustments-horizontal',
+                    'helper' => $this->formatBarberComparisonHelper($barbers),
+                ],
+            ],
+        ];
+    }
+
     private function formatChangeData(int|float $current, int|float $previous, bool $invert = false): array
     {
         $change = $this->formatChange($current, $previous, $invert);
         $change['class'] = $this->colorClass($change['color']);
 
         return $change;
+    }
+
+    private function formatCurrency(float $amount, int $precision = 0): string
+    {
+        $decimals = $precision > 0 ? $precision : 0;
+
+        return 'Br ' . number_format($amount, $decimals, ',', ' ');
+    }
+
+    private function formatRevenueHelper(array $bucket): string
+    {
+        if (($bucket['count'] ?? 0) === 0) {
+            return 'Нет данных за период';
+        }
+
+        if (($bucket['total'] ?? 0) <= 0) {
+            return 'Нет данных за период';
+        }
+
+        $average = $this->formatCurrency($bucket['average'], 2);
+        $top = $bucket['top'] ?? null;
+
+        if (! $top) {
+            return sprintf('Среднее значение: %s', $average);
+        }
+
+        $topAmount = $this->formatCurrency($top['amount']);
+
+        return sprintf('Среднее: %s · Пик: %s — %s', $average, $top['label'], $topAmount);
+    }
+
+    private function formatBarberComparisonHelper(array $barbers): string
+    {
+        if (($barbers['count'] ?? 0) === 0 || empty($barbers['leader'])) {
+            return 'Нет данных по мастерам';
+        }
+
+        $parts = [];
+
+        $parts[] = sprintf('Средняя выручка: %s', $this->formatCurrency($barbers['average']));
+
+        if (! empty($barbers['laggard']) && ($barbers['count'] ?? 0) > 1) {
+            $parts[] = sprintf('Минимум: %s — %s',
+                $barbers['laggard']['name'],
+                $this->formatCurrency($barbers['laggard']['amount'])
+            );
+
+            if (($barbers['gap'] ?? 0) > 0) {
+                $parts[] = sprintf('Разница: %s', $this->formatCurrency($barbers['gap']));
+            }
+        }
+
+        $parts[] = sprintf('Мастеров в срезе: %d', $barbers['count']);
+
+        return implode(' · ', $parts);
     }
 
     private function colorClass(string $color): string
@@ -274,6 +396,11 @@ class DashboardStats extends Widget
                 'badge' => 'bg-warning-100 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400',
                 'chip' => 'bg-warning-50 text-warning-500 dark:bg-warning-500/10 dark:text-warning-300',
                 'hover' => 'hover:border-warning-200',
+            ],
+            'danger' => [
+                'badge' => 'bg-danger-100 text-danger-600 dark:bg-danger-500/10 dark:text-danger-400',
+                'chip' => 'bg-danger-50 text-danger-500 dark:bg-danger-500/10 dark:text-danger-300',
+                'hover' => 'hover:border-danger-200',
             ],
             default => [
                 'badge' => 'bg-primary-100 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400',

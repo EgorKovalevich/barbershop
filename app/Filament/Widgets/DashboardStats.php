@@ -17,6 +17,24 @@ class DashboardStats extends Widget
 
     public ?string $filter = null;
 
+    public function mount(): void
+    {
+        $this->filter ??= $this->getDefaultFilter();
+    }
+
+    public function setFilter(string $filter): void
+    {
+        if (! array_key_exists($filter, $this->getFilters() ?? [])) {
+            return;
+        }
+
+        if ($this->filter === $filter) {
+            return;
+        }
+
+        $this->filter = $filter;
+    }
+
     protected function getViewData(): array
     {
         $filter = $this->filter ?? $this->getDefaultFilter();

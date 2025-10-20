@@ -14,6 +14,16 @@
                     @foreach ($filters as $filterOption)
                         @php($isActive = $currentFilter === $filterOption['key'])
 
+                        @php
+                            $label = $filterOption['label'];
+                            $label = is_array($label)
+                                ? collect($label)
+                                    ->map(fn ($item) => is_scalar($item) ? (string) $item : null)
+                                    ->filter()
+                                    ->implode(' ')
+                                : (string) $label;
+                        @endphp
+
                         <x-filament::button
                             size="sm"
                             :color="$isActive ? 'primary' : 'gray'"
@@ -28,7 +38,7 @@
                                     : 'opacity-80 hover:opacity-100 focus-visible:ring-gray-300 dark:focus-visible:ring-gray-600',
                             ]"
                         >
-                            {{ $filterOption['label'] }}
+                            {{ $label }}
                         </x-filament::button>
                     @endforeach
                 </div>

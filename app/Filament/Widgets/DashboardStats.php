@@ -195,7 +195,7 @@ class DashboardStats extends Widget
         return [
             'title' => '3. Барберы и услуги',
             'description' => 'Эффективность мастеров и популярность услуг.',
-            'icon' => 'heroicon-o-briefcase',
+            'icon' => 'heroicon-o-scissors',
             'accent' => 'warning',
             'metrics' => [
                 [
@@ -335,7 +335,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Посетители сайта',
                     'value' => $visitorsValue,
-                    'icon' => 'heroicon-o-globe-alt',
+                    'icon' => 'heroicon-o-eye',
                     'helper' => 'уникальные / все визиты за период',
                 ],
                 [
@@ -347,7 +347,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Записи через сайт',
                     'value' => number_format($metrics['bookings_total'], 0, ',', ' '),
-                    'icon' => 'heroicon-o-ticket',
+                    'icon' => 'heroicon-o-clipboard-list',
                     'helper' => $metrics['bookings_completed'] > 0
                         ? sprintf('Завершено: %d', $metrics['bookings_completed'])
                         : 'Записи пока не завершены',
@@ -365,7 +365,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Популярные дни',
                     'value' => $popularDays,
-                    'icon' => 'heroicon-o-calendar-days',
+                    'icon' => 'heroicon-o-calendar',
                     'helper' => $popularDays !== 'Нет данных'
                         ? 'Лучшие дни для акций и рекламы'
                         : 'Нет активных записей',

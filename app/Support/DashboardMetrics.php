@@ -314,6 +314,75 @@ class DashboardMetrics
         ];
     }
 
+    /**
+     * Collect financial metrics for the given period.
+     */
+    public function financials(Carbon $start, Carbon $end): array
+    {
+        $events = Event::query()
+            ->whereBetween('start', [$start, $end])
+            ->where('status', Event::STATUS_COMPLETED)
+            ->get(['start', 'barber_id', 'category']);
+
+        $categoryIds = $events
+            ->pluck('category')
+            ->filter(fn ($value) => $value && Str::isUuid($value))
+            ->unique()
+            ->values();
+
+        $categoryAmounts = Category::query()
+            ->whereIn('id', $categoryIds)
+            ->get()
+            ->mapWithKeys(fn (Category $category) => [
+                $category->id => (float) $category->amount,
+            ]);
+
+        $totalRevenue = 0.0;
+        $totalVisits = 0;
+        $dailyBuckets = [];
+        $weeklyBuckets = [];
+        $monthlyBuckets = [];
+        $barberRevenue = [];
+
+        foreach ($events as $event) {
+            $amount = $categoryAmounts[$event->category] ?? 0.0;
+
+            $totalRevenue += $amount;
+            $totalVisits++;
+
+            $date = $event->start->copy();
+
+            $dayKey = $date->toDateString();
+            $dailyBuckets[$dayKey] = ($dailyBuckets[$dayKey] ?? 0) + $amount;
+
+            $weekKey = $date->copy()->startOfWeek(Carbon::MONDAY)->toDateString();
+            $weeklyBuckets[$weekKey] = ($weeklyBuckets[$weekKey] ?? 0) + $amount;
+
+            $monthKey = $date->copy()->startOfMonth()->toDateString();
+            $monthlyBuckets[$monthKey] = ($monthlyBuckets[$monthKey] ?? 0) + $amount;
+
+            if ($event->barber_id) {
+                $barberRevenue[$event->barber_id] = ($barberRevenue[$event->barber_id] ?? 0) + $amount;
+            }
+        }
+
+        $averageCheck = $totalVisits > 0 ? round($totalRevenue / $totalVisits, 2) : 0.0;
+
+        $barberSummary = $this->summarizeBarberRevenue($barberRevenue, $totalRevenue);
+
+        return [
+            'total_revenue' => round($totalRevenue, 2),
+            'completed_visits' => $totalVisits,
+            'average_check' => $averageCheck,
+            'breakdowns' => [
+                'daily' => $this->summarizeRevenueBuckets($dailyBuckets, 'daily'),
+                'weekly' => $this->summarizeRevenueBuckets($weeklyBuckets, 'weekly'),
+                'monthly' => $this->summarizeRevenueBuckets($monthlyBuckets, 'monthly'),
+            ],
+            'barbers' => $barberSummary,
+        ];
+    }
+
     private function calculateAverageVisitInterval($eventsQuery): array
     {
         $intervals = [];
@@ -409,5 +478,98 @@ class DashboardMetrics
         ])->filter()->implode(' '));
 
         return $fullName !== '' ? $fullName : ($user->email ?? 'ID ' . $user->id);
+    }
+
+    private function summarizeRevenueBuckets(array $buckets, string $granularity): array
+    {
+        if ($buckets === []) {
+            return [
+                'total' => 0.0,
+                'average' => 0.0,
+                'count' => 0,
+                'top' => null,
+            ];
+        }
+
+        $total = array_sum($buckets);
+        $count = count($buckets);
+
+        arsort($buckets);
+        $topKey = array_key_first($buckets);
+        $topAmount = $buckets[$topKey];
+
+        return [
+            'total' => round($total, 2),
+            'average' => round($total / $count, 2),
+            'count' => $count,
+            'top' => $total > 0 ? [
+                'key' => $topKey,
+                'amount' => round($topAmount, 2),
+                'label' => $this->formatRevenuePeriodLabel($topKey, $granularity),
+            ] : null,
+        ];
+    }
+
+    private function summarizeBarberRevenue(array $barberRevenue, float $totalRevenue): array
+    {
+        if ($barberRevenue === []) {
+            return [
+                'leader' => null,
+                'laggard' => null,
+                'gap' => 0.0,
+                'count' => 0,
+                'average' => 0.0,
+            ];
+        }
+
+        arsort($barberRevenue);
+
+        $leaderId = array_key_first($barberRevenue);
+        $leaderAmount = $barberRevenue[$leaderId];
+
+        $laggardId = array_key_last($barberRevenue);
+        $laggardAmount = $barberRevenue[$laggardId];
+
+        $barberIds = array_keys($barberRevenue);
+
+        $barbers = Barber::query()
+            ->with('user')
+            ->whereIn('user_id', $barberIds)
+            ->get()
+            ->keyBy('user_id');
+
+        $leader = $barbers->get($leaderId);
+        $laggard = $barbers->get($laggardId);
+
+        $barberCount = count($barberRevenue);
+
+        return [
+            'leader' => $leader ? [
+                'name' => $this->formatBarberName($leader),
+                'amount' => round($leaderAmount, 2),
+            ] : null,
+            'laggard' => $laggard ? [
+                'name' => $this->formatBarberName($laggard),
+                'amount' => round($laggardAmount, 2),
+            ] : null,
+            'gap' => $barberCount > 1 ? round($leaderAmount - $laggardAmount, 2) : 0.0,
+            'count' => $barberCount,
+            'average' => $barberCount > 0 ? round($totalRevenue / $barberCount, 2) : 0.0,
+        ];
+    }
+
+    private function formatRevenuePeriodLabel(string $key, string $granularity): string
+    {
+        $date = Carbon::parse($key);
+
+        return match ($granularity) {
+            'daily' => $date->format('d.m'),
+            'weekly' => sprintf('%s–%s',
+                $date->copy()->startOfWeek(Carbon::MONDAY)->format('d.m'),
+                $date->copy()->endOfWeek(Carbon::SUNDAY)->format('d.m')
+            ),
+            'monthly' => $date->copy()->startOfMonth()->format('m.Y'),
+            default => $date->toDateString(),
+        };
     }
 }

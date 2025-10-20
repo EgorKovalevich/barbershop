@@ -146,7 +146,6 @@ return [
         'register' => [
             Widgets\AccountWidget::class,
             Widgets\FilamentInfoWidget::class,
-            \App\Filament\Widgets\BookingStatsOverview::class,
 //            SocialNetworksWidget::class,
 //            PaymentsChart::class,
 //            EventsChart::class,

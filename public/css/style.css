@@ -1798,6 +1798,12 @@ nav{
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.75));
 }
 
+.profile-card--form {
+    background: linear-gradient(140deg, rgba(30, 64, 175, 0.45), rgba(2, 132, 199, 0.18));
+    border: 1px solid rgba(125, 211, 252, 0.35);
+    box-shadow: 0 30px 60px rgba(8, 47, 73, 0.45);
+}
+
 .profile-card--activity {
     background: linear-gradient(135deg, rgba(8, 47, 73, 0.85), rgba(30, 64, 175, 0.35));
 }
@@ -2034,9 +2040,17 @@ nav{
     border-radius: 14px;
     padding: 12px 16px;
     font-size: 14px;
-    color: #000000;
+    color: #e2e8f0;
     outline: none;
     transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.profile-input::placeholder {
+    color: rgba(148, 163, 184, 0.65);
+}
+
+.profile-input option {
+    color: #0f172a;
 }
 
 .profile-input:focus {

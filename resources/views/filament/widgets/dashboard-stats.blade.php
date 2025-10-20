@@ -13,11 +13,25 @@
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $key => $label)
                         <x-filament::button
+                            type="button"
                             size="sm"
                             :color="$currentFilter === $key ? 'primary' : 'gray'"
-                            wire:click="$set('filter', '{$key}')"
+                            :class="[
+                                'transition focus-visible:ring-2 focus-visible:ring-offset-2',
+                                $currentFilter === $key
+                                    ? 'ring-2 ring-primary-500 ring-offset-1 dark:ring-offset-gray-900'
+                                    : 'ring-0'
+                            ]"
+                            wire:click="setFilter('{{$key}}')"
+                            wire:loading.attr="disabled"
+                            wire:target="setFilter('{{$key}}')"
                         >
-                            {{ $label }}
+                            <span wire:loading.remove wire:target="setFilter('{{$key}}')">{{ $label }}</span>
+                            <x-filament::loading-indicator
+                                class="h-4 w-4"
+                                wire:loading
+                                wire:target="setFilter('{{$key}}')"
+                            />
                         </x-filament::button>
                     @endforeach
                 </div>

@@ -11,7 +11,7 @@ use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -276,12 +276,12 @@ class AdminDashboardStatsService
         return Category::query()->get(['id', 'name', 'amount', 'color'])->keyBy('id');
     }
 
-    private function baseEventQuery(): EloquentBuilder
+    private function baseEventQuery(): Builder
     {
         return Event::query();
     }
 
-    private function basePaymentQuery(): EloquentBuilder
+    private function basePaymentQuery(): Builder
     {
         return Payment::query()->where('paid', true);
     }

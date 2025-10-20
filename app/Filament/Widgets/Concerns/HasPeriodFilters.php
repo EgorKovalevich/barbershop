@@ -9,7 +9,7 @@ trait HasPeriodFilters
     protected function getFilters(): ?array
     {
         return [
-            'day' => 'Сегодня',
+            'day' => 'День',
             'week' => 'Неделя',
             'month' => 'Месяц',
         ];

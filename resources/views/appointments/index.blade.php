@@ -112,19 +112,6 @@
                         </div>
                     </section>
                 </div>
-
-                <div class="profile-column profile-column--forms">
-                    <section class="profile-card profile-card--activity">
-                        <h2 class="profile-card-title">Как изменить запись</h2>
-                        <p class="profile-card-subtitle">Чтобы перенести или обновить визит, используйте кнопку «Редактировать» возле нужной записи.</p>
-
-                        <ul class="profile-tips-list">
-                            <li>Выберите новую дату и время в доступных интервалах.</li>
-                            <li>Укажите комментарий для мастера, если есть особые пожелания.</li>
-                            <li>Мы сообщим мастеру о внесённых изменениях автоматически.</li>
-                        </ul>
-                    </section>
-                </div>
             </div>
         </div>
     </div>

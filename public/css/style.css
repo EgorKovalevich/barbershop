@@ -1766,7 +1766,6 @@ nav{
 
 .profile-content {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
     gap: 24px;
     margin-top: 40px;
 }

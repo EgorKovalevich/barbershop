@@ -12,12 +12,34 @@
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @foreach ($filters as $key => $label)
+                        @php
+                            $isActive = $currentFilter === $key;
+                            $labelText = is_array($label)
+                                ? ($label['label']
+                                    ?? \Illuminate\Support\Arr::first(
+                                        $label,
+                                        fn ($value) => is_string($value) || is_numeric($value),
+                                        ''
+                                    ))
+                                : $label;
+                            $labelText = $labelText !== '' ? $labelText : (is_scalar($label) ? (string) $label : (is_scalar($key) ? (string) $key : ''));
+                        @endphp
+
                         <x-filament::button
+                            type="button"
                             size="sm"
-                            :color="$currentFilter === $key ? 'primary' : 'gray'"
-                            wire:click="$set('filter', '{$key}')"
+                            :color="$isActive ? 'primary' : 'gray'"
+                            :outlined="! $isActive"
+                            :icon="$isActive ? 'heroicon-o-check-circle' : null"
+                            wire:click="$set('filter', '{{ $key }}')"
+                            wire:loading.attr="disabled"
+                            :class="[
+                                'transition-colors duration-150',
+                                'shadow-sm hover:shadow' => ! $isActive,
+                                'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-gray-900' => $isActive,
+                            ]"
                         >
-                            {{ $label }}
+                            {{ $labelText }}
                         </x-filament::button>
                     @endforeach
                 </div>

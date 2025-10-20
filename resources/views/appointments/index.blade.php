@@ -65,47 +65,16 @@
                         <div class="profile-appointments">
                             @forelse ($appointments as $appointment)
                                 @php
-                                    $barberUser = $appointment->barber;
-                                    $barberName = $barberUser
-                                        ? trim(collect([$barberUser->surname ?? null, $barberUser->name ?? null])->filter()->join(' '))
-                                        : null;
-
-                                    if (blank($barberName) && $barberUser?->name) {
-                                        $barberName = $barberUser->name;
-                                    }
+                                    $statusLabel = \App\Models\Event::statusOptions()[$appointment->status] ?? 'Без статуса';
+                                    $categoryName = optional($categories->get($appointment->category))->name;
                                 @endphp
-                                <article class="profile-appointment">
-                                    <div class="profile-appointment-header">
-                                        <div>
-                                            <span class="profile-appointment-date">{{ optional($appointment->start)->translatedFormat('d F Y') }}</span>
-                                            <span class="profile-appointment-time">{{ optional($appointment->start)->format('H:i') }} – {{ optional($appointment->end)->format('H:i') }}</span>
-                                        </div>
-                                        <span class="profile-appointment-status">{{ App\Models\Event::statusOptions()[$appointment->status] ?? 'Без статуса' }}</span>
-                                    </div>
 
-                                    <dl class="profile-appointment-details">
-                                        <div class="profile-appointment-detail">
-                                            <dt>Барбер</dt>
-                                            <dd>{{ $barberName ?? '—' }}</dd>
-                                        </div>
-                                        <div class="profile-appointment-detail">
-                                            <dt>Услуга</dt>
-                                            <dd>{{ optional($categories->get($appointment->category))->name ?? '—' }}</dd>
-                                        </div>
-                                        <div class="profile-appointment-detail">
-                                            <dt>Контактный телефон</dt>
-                                            <dd>{{ $appointment->number ?? '—' }}</dd>
-                                        </div>
-                                        <div class="profile-appointment-detail">
-                                            <dt>Комментарий</dt>
-                                            <dd>{{ $appointment->body ?? '—' }}</dd>
-                                        </div>
-                                    </dl>
-
-                                    <div class="profile-appointment-actions">
-                                        <a href="{{ route('appointments.edit', $appointment) }}" class="profile-appointment-edit">Редактировать</a>
-                                    </div>
-                                </article>
+                                @include('appointments.partials.appointment-card', [
+                                    'appointment' => $appointment,
+                                    'statusLabel' => $statusLabel,
+                                    'categoryName' => $categoryName,
+                                    'editUrl' => route('appointments.edit', $appointment),
+                                ])
                             @empty
                                 <p class="profile-empty">У вас пока нет активных записей. Оформите первую запись на главной странице.</p>
                             @endforelse

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Filament\Widgets\Concerns\InteractsWithPeriodFilters;
 use App\Models\Event;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -12,12 +11,7 @@ use Flowframe\Trend\TrendValue;
 
 class BookingStats extends StatsOverviewWidget
 {
-    use InteractsWithPeriodFilters;
-
-    protected function getHeading(): string
-    {
-        return 'Записи и посещаемость';
-    }
+    protected static ?string $pollingInterval = '60s';
 
     protected function getCards(): array
     {
@@ -50,24 +44,11 @@ class BookingStats extends StatsOverviewWidget
                 ->descriptionColor($completedChange['color'])
                 ->extraAttributes(['class' => 'min-h-[164px]']),
             Card::make('Фактическая посещаемость', number_format($metrics['attended_clients']))
-                ->description(
-                    $attendanceChange['description'] . ' · ' . sprintf('%.1f%% от записей', $metrics['attendance_rate'])
-                )
+                ->description($attendanceChange['description'] . ' · ' . sprintf('%.1f%% от записей', $metrics['attendance_rate']))
                 ->descriptionIcon($attendanceChange['icon'])
                 ->descriptionColor($attendanceChange['color'])
                 ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make(
-                'Средняя длительность визита',
-                $this->formatDuration($metrics['average_visit_duration_minutes'])
-            )
-                ->description('По завершённым визитам')
-                ->descriptionIcon('heroicon-o-clock')
-                ->descriptionColor('primary')
-                ->extraAttributes(['class' => 'min-h-[164px]']),
-            Card::make(
-                'Отменённые / неявки',
-                sprintf('%s / %s', number_format($metrics['cancelled']), number_format($metrics['no_show']))
-            )
+            Card::make('Отменённые / неявки', sprintf('%s / %s', number_format($metrics['cancelled']), number_format($metrics['no_show'])))
                 ->description($cancellationChange['description'] . ' · всего ' . number_format($metrics['cancellations_total']))
                 ->descriptionIcon($cancellationChange['icon'])
                 ->descriptionColor($cancellationChange['color'])
@@ -83,6 +64,46 @@ class BookingStats extends StatsOverviewWidget
                 ->descriptionColor($metrics['retention_rate'] >= 30 ? 'success' : 'primary')
                 ->extraAttributes(['class' => 'min-h-[164px]']),
         ];
+    }
+
+    protected function getFilters(): ?array
+    {
+        return [
+            'day' => 'Сегодня',
+            'week' => 'Неделя',
+            'month' => 'Месяц',
+        ];
+    }
+
+    protected function getDefaultFilter(): ?string
+    {
+        return 'week';
+    }
+
+    private function resolvePeriods(?string $filter): array
+    {
+        $now = Carbon::now();
+
+        return match ($filter) {
+            'day' => [
+                $now->copy()->startOfDay(),
+                $now->copy()->endOfDay(),
+                $now->copy()->subDay()->startOfDay(),
+                $now->copy()->subDay()->endOfDay(),
+            ],
+            'month' => [
+                $now->copy()->startOfMonth(),
+                $now->copy()->endOfMonth(),
+                $now->copy()->subMonth()->startOfMonth(),
+                $now->copy()->subMonth()->endOfMonth(),
+            ],
+            default => [
+                $now->copy()->startOfWeek(),
+                $now->copy()->endOfWeek(),
+                $now->copy()->subWeek()->startOfWeek(),
+                $now->copy()->subWeek()->endOfWeek(),
+            ],
+        };
     }
 
     private function collectMetrics(Carbon $start, Carbon $end): array
@@ -125,15 +146,6 @@ class BookingStats extends StatsOverviewWidget
 
         $retentionRate = $totalBookings > 0 ? round(($returningBookings / $totalBookings) * 100, 1) : 0.0;
 
-        $averageVisitDuration = (clone $baseQuery)
-            ->where('status', Event::STATUS_COMPLETED)
-            ->whereNotNull('start')
-            ->whereNotNull('end')
-            ->get()
-            ->map(fn (Event $event): int => $event->start?->diffInMinutes($event->end) ?? 0)
-            ->filter()
-            ->avg() ?: 0.0;
-
         return [
             'total_bookings' => $totalBookings,
             'completed' => $completed,
@@ -145,7 +157,6 @@ class BookingStats extends StatsOverviewWidget
             'cancellation_rate' => $cancellationRate,
             'returning_clients' => $returningClients,
             'retention_rate' => $retentionRate,
-            'average_visit_duration_minutes' => round($averageVisitDuration),
         ];
     }
 
@@ -206,25 +217,5 @@ class BookingStats extends StatsOverviewWidget
             'icon' => 'heroicon-o-trending-down',
             'color' => $invert ? 'success' : 'danger',
         ];
-    }
-
-    private function formatDuration(int $minutes): string
-    {
-        if ($minutes <= 0) {
-            return '—';
-        }
-
-        $hours = intdiv($minutes, 60);
-        $remainingMinutes = $minutes % 60;
-
-        if ($hours === 0) {
-            return $remainingMinutes . ' мин';
-        }
-
-        if ($remainingMinutes === 0) {
-            return $hours . ' ч';
-        }
-
-        return sprintf('%d ч %d мин', $hours, $remainingMinutes);
     }
 }

@@ -29,7 +29,9 @@
                         <div>
                             <div class="flex items-center gap-3">
                                 <div class="flex h-10 w-10 items-center justify-center rounded-full {{ $group['styles']['badge'] }}">
-                                    <x-filament::icon :icon="$group['icon']" class="h-5 w-5" />
+                                    @if ($group['icon'])
+                                        <x-dynamic-component :component="$group['icon']" class="h-5 w-5" />
+                                    @endif
                                 </div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                                     {{ $group['title'] }}
@@ -54,13 +56,18 @@
                                         </p>
                                     </div>
                                     <div class="flex h-10 w-10 items-center justify-center rounded-lg {{ $group['styles']['chip'] }}">
-                                        <x-filament::icon :icon="$metric['icon'] ?? $group['icon']" class="h-5 w-5" />
+                                        @php($icon = $metric['icon'] ?? $group['icon'])
+                                        @if ($icon)
+                                            <x-dynamic-component :component="$icon" class="h-5 w-5" />
+                                        @endif
                                     </div>
                                 </div>
 
                                 @if (! empty($metric['change']))
                                     <div class="mt-4 flex items-center gap-2 text-sm {{ $metric['change']['class'] }}">
-                                        <x-filament::icon :icon="$metric['change']['icon']" class="h-4 w-4" />
+                                        @if (! empty($metric['change']['icon']))
+                                            <x-dynamic-component :component="$metric['change']['icon']" class="h-4 w-4" />
+                                        @endif
                                         <span>{{ $metric['change']['description'] }}</span>
                                     </div>
                                 @endif

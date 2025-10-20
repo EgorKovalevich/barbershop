@@ -14,27 +14,15 @@
                     @foreach ($filters as $key => $label)
                         @php
                             $isActive = $currentFilter === $key;
-
-                            $labelText = '';
-
-                            if (is_array($label)) {
-                                $labelText = $label['label'] ?? null;
-
-                                if (! is_string($labelText) && ! is_numeric($labelText)) {
-                                    $labelText = \Illuminate\Support\Arr::first(
+                            $labelText = is_array($label)
+                                ? ($label['label']
+                                    ?? \Illuminate\Support\Arr::first(
                                         $label,
-                                        fn ($value) => is_string($value) || is_numeric($value)
-                                    );
-                                }
-                            } elseif (is_string($label) || is_numeric($label)) {
-                                $labelText = $label;
-                            }
-
-                            if ($labelText === null || $labelText === '') {
-                                $labelText = is_scalar($key) ? (string) $key : '';
-                            }
-
-                            $labelText = (string) $labelText;
+                                        fn ($value) => is_string($value) || is_numeric($value),
+                                        ''
+                                    ))
+                                : $label;
+                            $labelText = $labelText !== '' ? $labelText : (is_scalar($label) ? (string) $label : (is_scalar($key) ? (string) $key : ''));
                         @endphp
 
                         <x-filament::button

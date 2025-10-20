@@ -63,32 +63,32 @@ class DashboardStats extends Widget
         return [
             'title' => '1. Записи',
             'description' => 'Основные показатели загрузки и посещаемости за выбранный период.',
-            'icon' => 'heroicon-o-calendar-days',
+            'icon' => 'heroicon-o-calendar',
             'accent' => 'primary',
             'metrics' => [
                 [
                     'label' => 'Количество записей',
                     'value' => number_format($current['total_bookings']),
-                    'icon' => 'heroicon-o-clipboard-document-check',
+                    'icon' => 'heroicon-o-clipboard-check',
                     'change' => $bookingsChange,
                 ],
                 [
                     'label' => 'Завершённые визиты',
                     'value' => number_format($current['completed']),
-                    'icon' => 'heroicon-o-check-badge',
+                    'icon' => 'heroicon-o-badge-check',
                     'change' => $completedChange,
                 ],
                 [
                     'label' => 'Фактическая посещаемость',
                     'value' => number_format($current['attended_clients']),
-                    'icon' => 'heroicon-o-user-group',
+                    'icon' => 'heroicon-o-users',
                     'change' => $attendanceChange,
                     'helper' => sprintf('%.1f%% от всех записей', $current['attendance_rate']),
                 ],
                 [
                     'label' => 'Отменённые / неявки',
                     'value' => sprintf('%s / %s', number_format($current['cancelled']), number_format($current['no_show'])),
-                    'icon' => 'heroicon-o-x-mark',
+                    'icon' => 'heroicon-o-x-circle',
                     'change' => $cancellationChange,
                     'helper' => 'Всего отмен: ' . number_format($current['cancellations_total']),
                 ],
@@ -122,13 +122,13 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Новые клиенты',
                     'value' => number_format($current['new_clients']),
-                    'icon' => 'heroicon-o-user-plus',
+                    'icon' => 'heroicon-o-user-add',
                     'change' => $newClientsChange,
                 ],
                 [
                     'label' => 'Постоянные клиенты',
                     'value' => number_format($current['returning_clients']),
-                    'icon' => 'heroicon-o-arrow-path-rounded-square',
+                    'icon' => 'heroicon-o-refresh',
                     'change' => $returningClientsChange,
                     'helper' => $returningHelper,
                 ],
@@ -178,7 +178,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Клиентов на мастера',
                     'value' => number_format($clientsPerBarber['average'], 1, ',', ' '),
-                    'icon' => 'heroicon-o-rectangle-stack',
+                    'icon' => 'heroicon-o-user-group',
                     'helper' => $clientsPerBarber['active_barbers'] > 0
                         ? sprintf('Всего %d клиентов · %d мастера(-ов)', $clientsPerBarber['total_clients'], $clientsPerBarber['active_barbers'])
                         : 'Нет данных за период',
@@ -186,7 +186,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Средний чек по мастеру',
                     'value' => 'Br ' . number_format($averageCheck['amount'], 2, ',', ' '),
-                    'icon' => 'heroicon-o-banknotes',
+                    'icon' => 'heroicon-o-cash',
                     'helper' => $averageCheck['total_revenue'] > 0
                         ? sprintf('Выручка Br %s · визитов %d', number_format($averageCheck['total_revenue'], 0, ',', ' '), $averageCheck['completed_visits'])
                         : 'Нет завершённых визитов',
@@ -194,7 +194,7 @@ class DashboardStats extends Widget
                 [
                     'label' => 'Загрузка барбера',
                     'value' => sprintf('%.1f%%', $averageOccupancy['percentage']),
-                    'icon' => 'heroicon-o-presentation-chart-bar',
+                    'icon' => 'heroicon-o-chart-square-bar',
                     'helper' => $averageOccupancy['leader'] !== null
                         ? sprintf('Лидер: %s — %.1f%% · записей %d',
                             $averageOccupancy['leader']['name'],
